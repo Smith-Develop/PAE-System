@@ -2,19 +2,23 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { 
-  Package, 
-  ChefHat, 
-  Calculator, 
-  Receipt, 
-  FileSpreadsheet, 
+import {
+  ChefHat,
+  Calculator,
+  Receipt,
+  FileSpreadsheet,
   Settings,
   LogOut,
   Truck,
   Warehouse,
   Building,
   Layers,
-  Users
+  Users,
+  Puzzle,
+  Package,
+  ClipboardList,
+  BookOpen,
+  Store,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
@@ -31,54 +35,89 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
-const NAV_ITEMS = [
+const ADMIN_ITEMS = [
   { name: "Operadores", href: "/operadores", icon: Building },
   { name: "Clientes", href: "/clientes", icon: Users },
   { name: "Proveedores", href: "/proveedores", icon: Truck },
+];
+
+const CATALOG_ITEMS = [
   { name: "Maestro de Productos", href: "/maestro", icon: Package },
   { name: "Grupos Alimentarios", href: "/grupos", icon: Layers },
+  { name: "Componentes", href: "/componentes", icon: Puzzle },
+];
+
+const RECIPE_ITEMS = [
   { name: "Recetario", href: "/recetas", icon: ChefHat },
-  { name: "Bodega / Inventario", href: "/bodega", icon: Warehouse },
+];
+
+const OPERATIONS_ITEMS = [
   { name: "Pedidos", href: "/pedidos", icon: Calculator },
-  { name: "Registro de Compras", href: "/compras", icon: Receipt },
+  { name: "Compras", href: "/compras", icon: Receipt },
+  { name: "Bodega / Inventario", href: "/bodega", icon: Warehouse },
+];
+
+const REPORT_ITEMS = [
   { name: "Reporte Gobernación", href: "/reporte", icon: FileSpreadsheet },
 ];
+
+function NavSection({
+  label,
+  items,
+  pathname,
+}: {
+  label: string;
+  items: { name: string; href: string; icon: React.ComponentType<{ className?: string }> }[];
+  pathname: string;
+}) {
+  return (
+    <SidebarGroup>
+      <SidebarGroupLabel className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-1">
+        {label}
+      </SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          {items.map((item) => (
+            <SidebarMenuItem key={item.href}>
+              <SidebarMenuButton
+                render={<Link href={item.href} />}
+                isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                tooltip={item.name}
+              >
+                <item.icon />
+                <span>{item.name}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  );
+}
 
 export function AppSidebar() {
   const pathname = usePathname();
 
   return (
     <Sidebar variant="inset">
-      <SidebarHeader className="flex flex-row items-center gap-2 p-4 pt-6">
-        <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+      <SidebarHeader className="flex flex-row items-center gap-3 px-4 pt-6 pb-4">
+        <div className="flex aspect-square size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
           <ChefHat className="size-5" />
         </div>
         <div className="flex flex-col gap-0.5 leading-none">
-          <span className="font-semibold tracking-tight">PAE Antioquia</span>
-          <span className="text-xs text-muted-foreground">Logística & Reportes</span>
+          <span className="font-bold tracking-tight text-sm">PAE System</span>
+          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+            Logística & Reportes
+          </span>
         </div>
       </SidebarHeader>
-      
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Módulos Principales</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {NAV_ITEMS.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton 
-                    render={<Link href={item.href} />}
-                    isActive={pathname.startsWith(item.href)}
-                    tooltip={item.name}
-                  >
-                    <item.icon />
-                    <span>{item.name}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+
+      <SidebarContent className="px-2">
+        <NavSection label="Administración" items={ADMIN_ITEMS} pathname={pathname} />
+        <NavSection label="Catálogo" items={CATALOG_ITEMS} pathname={pathname} />
+        <NavSection label="Recetario" items={RECIPE_ITEMS} pathname={pathname} />
+        <NavSection label="Operaciones" items={OPERATIONS_ITEMS} pathname={pathname} />
+        <NavSection label="Reportes" items={REPORT_ITEMS} pathname={pathname} />
       </SidebarContent>
 
       <SidebarFooter>
@@ -86,7 +125,10 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton render={<Link href="/ajustes" />} isActive={pathname.startsWith("/ajustes")}>
+                <SidebarMenuButton
+                  render={<Link href="/ajustes" />}
+                  isActive={pathname.startsWith("/ajustes")}
+                >
                   <Settings />
                   <span>Ajustes</span>
                 </SidebarMenuButton>

@@ -34,8 +34,8 @@ export type ModuleName = keyof RolePermissions;
 
 // --- Módulo de Pedidos ---
 export interface SelectedMenu {
-  recipeId: string;
-  recipeName: string;
+  menuId: string;
+  menuName: string;
   raciones: number;
 }
 
@@ -170,21 +170,45 @@ export interface Product {
   updatedAt?: Date;
 }
 
-export interface RecipeIngredient {
+export interface Component {
   id: string;
-  componente: string;
-  preparacion: string;
+  name: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface DishIngredient {
+  id: string;
   cantidadBrutaUnitaria: number;
-  recipeId: string;
+  dishId: string;
   masterProductId: string;
   masterProduct?: MasterProduct;
 }
 
-export interface Recipe {
+export interface Dish {
+  id: string;
+  nombre: string;
+  componenteId: string;
+  componente?: Component;
+  descripcion?: string | null;
+  ingredients: DishIngredient[];
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface MenuDish {
+  id: string;
+  orden: number;
+  menuId: string;
+  dishId: string;
+  dish?: Dish;
+}
+
+export interface Menu {
   id: string;
   nombre: string;
   descripcion?: string | null;
-  ingredients: RecipeIngredient[];
+  dishes: MenuDish[];
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -206,7 +230,8 @@ export interface OrderItem {
   id: string;
   raciones: number;
   orderId: string;
-  recipeId: string;
+  menuId: string;
+  menu?: Menu;
 }
 
 export interface Order {
@@ -218,7 +243,18 @@ export interface Order {
   operatorId?: string | null;
   operator?: Operator | null;
   items: OrderItem[];
+  materials?: OrderMaterial[];
   createdAt?: Date;
+}
+
+export interface OrderMaterial {
+  id: string;
+  orderId: string;
+  masterProductId: string;
+  masterProduct?: MasterProduct;
+  productId: string;
+  product?: Product;
+  cantidadTotal: number;
 }
 
 export interface StockTransaction {

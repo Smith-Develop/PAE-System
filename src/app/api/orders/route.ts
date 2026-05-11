@@ -8,7 +8,7 @@ export async function GET() {
         client: true,
         operator: true,
         items: {
-          select: { recipeId: true, raciones: true },
+          select: { menuId: true, raciones: true },
         },
         materials: {
           include: {
@@ -66,8 +66,8 @@ export async function POST(request: Request) {
           clientId,
           nota,
           items: {
-            create: items.map((item: { recipeId: string; raciones: number }) => ({
-              recipeId: item.recipeId,
+            create: items.map((item: { menuId: string; raciones: number }) => ({
+              menuId: item.menuId,
               raciones: item.raciones,
             })),
           },

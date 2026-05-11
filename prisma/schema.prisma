@@ -116,7 +116,7 @@ model MasterProduct {
 
   // Relaciones
   providerProducts  Product[] // Los productos específicos por proveedor
-  recipeIngredients RecipeIngredient[]
+  dishIngredients   DishIngredient[]
   orderMaterials    OrderMaterial[]
 
   createdAt DateTime @default(now())
@@ -175,32 +175,70 @@ model StockTransaction {
 }
 
 // ============================================
-// MÓDULO 2: RECETARIO
+// MÓDULO 2: RECETARIO (Componentes, Platos y Menús)
 // ============================================
-model Recipe {
-  id          String             @id @default(cuid())
-  nombre      String
-  descripcion String?
-  ingredients RecipeIngredient[]
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
+model Component {
+  id     String @id @default(cuid())
+  name   String @unique // Proteína, Cereal, Fruta, Bebida, etc.
+
+  dishes Dish[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model RecipeIngredient {
+model Dish {
+  id            String           @id @default(cuid())
+  nombre        String           // "Carne Sudada"
+  componenteId  String
+  componente    Component        @relation(fields: [componenteId], references: [id])
+  descripcion   String?
+
+  ingredients DishIngredient[]
+  menuDishes  MenuDish[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model DishIngredient {
   id                    String   @id @default(cuid())
-  componente            String   // Proteína, Cereal, Fruta, etc.
-  preparacion           String   // Arroz con pollo, Ensalada, etc.
   cantidadBrutaUnitaria Float    // En gramos o mililitros (por 1 ración)
 
-  recipeId        String
-  recipe          Recipe        @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-  masterProductId String
-  masterProduct   MasterProduct @relation(fields: [masterProductId], references: [id])
+  dishId           String
+  dish             Dish          @relation(fields: [dishId], references: [id], onDelete: Cascade)
+  masterProductId  String
+  masterProduct    MasterProduct @relation(fields: [masterProductId], references: [id])
 
   createdAt DateTime @default(now())
 
-  @@index([recipeId])
+  @@index([dishId])
   @@index([masterProductId])
+}
+
+model Menu {
+  id          String       @id @default(cuid())
+  nombre      String       // "Menú No. 1"
+  descripcion String?
+
+  dishes      MenuDish[]
+  orderItems  OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model MenuDish {
+  id     String @id @default(cuid())
+  orden  Int    @default(0) // Orden del plato dentro del menú
+
+  menuId String
+  menu   Menu   @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  dishId String
+  dish   Dish   @relation(fields: [dishId], references: [id])
+
+  @@unique([menuId, dishId])
+  @@index([dishId])
 }
 
 // ============================================
@@ -229,9 +267,11 @@ model OrderItem {
 
   orderId  String
   order    Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  recipeId String
+  menuId   String
+  menu     Menu   @relation(fields: [menuId], references: [id])
 
   @@index([orderId])
+  @@index([menuId])
 }
 
 model OrderMaterial {

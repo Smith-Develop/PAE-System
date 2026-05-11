@@ -9,56 +9,55 @@ export default async function ReportePage({
 }) {
   const { month, clientId } = await searchParams;
 
-  let whereClause: any = {};
+  const whereOrder: any = {};
+  const whereMaterial: any = {};
 
   if (month) {
     const [year, m] = month.split("-");
     const startDate = new Date(parseInt(year), parseInt(m) - 1, 1);
     const endDate = new Date(parseInt(year), parseInt(m), 0, 23, 59, 59);
 
-    whereClause.fechaCompra = {
+    whereOrder.fecha = {
       gte: startDate,
       lte: endDate,
     };
   }
 
-  // Excluir compras con cantidad 0
-  whereClause.cantidadComprada = { gt: 0 };
-
-  // Si hay filtro de cliente, buscar los purchases donde el producto pertenece
-  // a purchases con ese clientId, o si tuviéramos clientId directo en Purchase...
-  // Por ahora filtramos a nivel de Purchase (necesita migración previa)
   if (clientId) {
-    whereClause.clientId = clientId;
+    whereOrder.clientId = clientId;
   }
 
-  const [purchases, clients] = await Promise.all([
-    prisma.purchase.findMany({
-      where: whereClause,
+  const [orders, clients] = await Promise.all([
+    prisma.order.findMany({
+      where: whereOrder,
       include: {
-        product: {
+        client: true,
+        operator: true,
+        materials: {
           include: {
-            provider: true,
             masterProduct: {
               include: { foodGroup: true },
             },
+            product: {
+              include: {
+                provider: true,
+              },
+            },
           },
         },
-        operator: true,
-        client: true,
       },
-      orderBy: { fechaCompra: "asc" },
+      orderBy: { fecha: "asc" },
     }),
     prisma.client.findMany({
       orderBy: { nombre: "asc" },
     }),
   ]);
 
-  const reportData = purchases.map((purchase) => {
-    const product = purchase.product;
-    const master = product.masterProduct;
-    const provider = product.provider;
-    const operator = purchase.operator || {
+  // Aplanar: cada OrderMaterial → una fila del reporte
+  const reportData: Record<string, any>[] = [];
+
+  for (const order of orders) {
+    const operator = order.operator || {
       nombreOperador: "",
       nitOperador: "",
       modeloAtencion: "",
@@ -68,42 +67,50 @@ export default async function ReportePage({
       contactoBodega: "",
       telefonoBodega: "",
     };
-    const dateObj = new Date(purchase.fechaCompra);
+    const dateObj = new Date(order.fecha);
     const mesFormat = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, "0")}`;
 
-    return {
-      "NOMBRE DEL OPERADOR": operator.nombreOperador,
-      "CC/NIT OPERADOR": operator.nitOperador,
-      "MODELO ATENCIÓN": operator.modeloAtencion,
-      "MODALIDAD ATENCIÓN": operator.modalidadAtencion,
-      "DIRECCIÓN BODEGA": operator.direccionBodega,
-      "MUNICIPIO BODEGA": operator.municipioBodega,
-      "CONTACTO BODEGA": operator.contactoBodega,
-      "TELÉFONO BODEGA": operator.telefonoBodega,
-      "RAZÓN SOCIAL PROVEEDOR": provider.razonSocial,
-      "CÓDIGO INSCRIPCIÓN": provider.codigoInscripcion || "",
-      "NIT PROVEEDOR": provider.nit,
-      "REPRESENTANTE LEGAL": provider.representanteLegal,
-      "MUNICIPIO PROVEEDOR": provider.municipio,
-      "DIRECCIÓN ESTABLECIMIENTO": provider.direccionEstablecimiento || "",
-      "TELÉFONO": provider.telefono || "",
-      "CORREO": provider.correo || "",
-      "TIPO ACTIVIDAD": provider.tipoActividad,
-      "COMPRA LOCAL": provider.compraLocal ? "SI" : "NO",
-      "GRUPO ALIMENTOS (Res 719)": master.foodGroup?.name || "",
-      "ALIMENTOS (Res 719)": master.nombre,
-      "DESCRIPCIÓN Y MARCA": product.descripcionMarca,
-      "REGISTRO SANITARIO": product.registroSanitario || "",
-      "FECHA VISITA": provider.fechaVisita || "",
-      "CONCEPTO SANITARIO": provider.conceptoSanitario || "",
-      "ENTIDAD EMISORA": provider.entidadEmisora || "",
-      "MES COMPRA": mesFormat,
-      "ALIMENTO COMPRADO": master.nombre,
-      "CANTIDAD TOTAL COMPRADA": purchase.cantidadComprada,
-      "UNIDAD": master.unidadMedida,
-      "VALOR TOTAL": purchase.valorTotal,
-    };
-  });
+    for (const material of order.materials) {
+      const product = material.product;
+      const master = material.masterProduct;
+      const provider = product.provider;
+
+      if (material.cantidadTotal <= 0) continue;
+
+      reportData.push({
+        "NOMBRE DEL OPERADOR": operator.nombreOperador,
+        "CC/NIT OPERADOR": operator.nitOperador,
+        "MODELO ATENCIÓN": operator.modeloAtencion,
+        "MODALIDAD ATENCIÓN": operator.modalidadAtencion,
+        "DIRECCIÓN BODEGA": operator.direccionBodega,
+        "MUNICIPIO BODEGA": operator.municipioBodega,
+        "CONTACTO BODEGA": operator.contactoBodega,
+        "TELÉFONO BODEGA": operator.telefonoBodega,
+        "RAZÓN SOCIAL PROVEEDOR": provider.razonSocial,
+        "CÓDIGO INSCRIPCIÓN": provider.codigoInscripcion || "",
+        "NIT PROVEEDOR": provider.nit,
+        "REPRESENTANTE LEGAL": provider.representanteLegal,
+        "MUNICIPIO PROVEEDOR": provider.municipio,
+        "DIRECCIÓN ESTABLECIMIENTO": provider.direccionEstablecimiento || "",
+        "TELÉFONO": provider.telefono || "",
+        "CORREO": provider.correo || "",
+        "TIPO ACTIVIDAD": provider.tipoActividad,
+        "COMPRA LOCAL": provider.compraLocal ? "SI" : "NO",
+        "GRUPO ALIMENTOS (Res 719)": master.foodGroup?.name || "",
+        "ALIMENTOS (Res 719)": master.nombre,
+        "DESCRIPCIÓN Y MARCA": product.descripcionMarca,
+        "REGISTRO SANITARIO": product.registroSanitario || "",
+        "FECHA VISITA": provider.fechaVisita || "",
+        "CONCEPTO SANITARIO": provider.conceptoSanitario || "",
+        "ENTIDAD EMISORA": provider.entidadEmisora || "",
+        "MES COMPRA": mesFormat,
+        "ALIMENTO COMPRADO": master.nombre,
+        "CANTIDAD TOTAL COMPRADA": material.cantidadTotal,
+        "UNIDAD": master.unidadMedida,
+        "VALOR TOTAL": 0, // Los pedidos no tienen valor monetario
+      });
+    }
+  }
 
   return (
     <div className="p-6 space-y-6 w-full max-w-full overflow-hidden">
@@ -114,7 +121,8 @@ export default async function ReportePage({
             719)
           </h1>
           <p className="text-muted-foreground">
-            Tabla consolidada cruzando compras y productos. Listo para exportar.
+            Datos consolidados desde los pedidos registrados. Listo para
+            exportar.
           </p>
         </div>
 

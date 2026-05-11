@@ -51,11 +51,15 @@ export function Combobox({
         }
       >
         {value
-          ? options.find((option) => option.value === value)?.label
+          ? (
+            <span className="truncate max-w-[220px] text-left" title={options.find((option) => option.value === value)?.label}>
+              {options.find((option) => option.value === value)?.label}
+            </span>
+          )
           : <span className="text-muted-foreground">{placeholder}</span>}
         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0" align="start">
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] min-w-[200px] max-w-[400px] p-0" align="start">
         <Command>
           <CommandInput placeholder={`Buscar...`} />
           <CommandList>
@@ -64,19 +68,20 @@ export function Combobox({
               {options.map((option) => (
                 <CommandItem
                   key={option.value}
-                  value={option.label} // Usamos label para la búsqueda interna de Command
+                  value={option.label}
                   onSelect={() => {
                     onValueChange(option.value);
                     setOpen(false);
                   }}
+                  className="cursor-pointer"
                 >
                   <Check
                     className={cn(
-                      "mr-2 h-4 w-4",
+                      "mr-2 h-4 w-4 shrink-0",
                       value === option.value ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  {option.label}
+                  <span className="truncate" title={option.label}>{option.label}</span>
                 </CommandItem>
               ))}
             </CommandGroup>

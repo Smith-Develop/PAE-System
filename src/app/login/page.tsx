@@ -75,7 +75,7 @@ export default function LoginPage() {
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
             <ChefHat className="h-6 w-6 text-primary" />
           </div>
-          <CardTitle className="text-2xl font-heading tracking-tight">PAE Antioquia</CardTitle>
+          <CardTitle className="text-2xl font-heading tracking-tight">PAE System</CardTitle>
           <CardDescription>
             Ingresa tus credenciales para acceder al sistema
           </CardDescription>

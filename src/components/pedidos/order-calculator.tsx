@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";
-import { Plus, Trash2, Printer, Save, Eye, History } from "lucide-react";
+import { Plus, Trash2, Printer, Save, Eye, History, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -42,15 +42,18 @@ import { Badge } from "@/components/ui/badge";
 import {
   SelectedMenu,
   PackingItem,
-  Recipe,
   Operator,
   Client,
   MasterProduct,
+  Menu,
+  Dish,
 } from "@/types";
 import { calculatePackingList } from "@/lib/calculations";
 
+const COMPONENTE_COLORS: Record<string, string> = {};
+
 interface OrderCalculatorProps {
-  recipes: Recipe[];
+  menus: Menu[];
   operators: Operator[];
   masterProducts: MasterProduct[];
   clients: Client[];
@@ -62,7 +65,7 @@ interface OrderRecord {
   nota?: string | null;
   client?: { id: string; nombre: string; nit: string } | null;
   operator?: { id: string; nombreOperador: string } | null;
-  items: { recipeId: string; raciones: number }[];
+  items: { menuId: string; raciones: number }[];
   materials: {
     id: string;
     cantidadTotal: number;
@@ -76,7 +79,7 @@ interface OrderRecord {
 }
 
 export function OrderCalculator({
-  recipes,
+  menus,
   operators,
   masterProducts,
   clients,
@@ -90,7 +93,6 @@ export function OrderCalculator({
   const [nota, setNota] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
-  // Historial de pedidos
   const [orders, setOrders] = useState<OrderRecord[]>([]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<OrderRecord | null>(null);
@@ -125,20 +127,34 @@ export function OrderCalculator({
     [clients, selectedClientId]
   );
 
-  const packingList: PackingItem[] = useMemo(() => {
-    const recipeData = recipes.map((r) => ({
-      id: r.id,
-      nombre: r.nombre,
-      ingredients: (r.ingredients || []).map((ing) => ({
-        masterProductId: ing.masterProductId,
-        productName: ing.masterProduct?.nombre || "Desconocido",
-        unit: ing.masterProduct?.unidadMedida || "Kg",
-        cantidadBrutaUnitaria: ing.cantidadBrutaUnitaria,
+  // Build menu data for calculatePackingList
+  const menuData = useMemo(
+    () =>
+      menus.map((m) => ({
+        id: m.id,
+        nombre: m.nombre,
+        dishes: (m.dishes || []).map((md) => ({
+          dish: {
+            id: md.dish?.id || "",
+            nombre: md.dish?.nombre || "Desconocido",
+            componente: md.dish?.componente?.name || "",
+            ingredients: (md.dish?.ingredients || []).map((ing) => ({
+              masterProductId: ing.masterProductId,
+              productName: ing.masterProduct?.nombre || "Desconocido",
+              unit: ing.masterProduct?.unidadMedida || "Kg",
+              cantidadBrutaUnitaria: ing.cantidadBrutaUnitaria,
+            })),
+          },
+        })),
       })),
-    }));
-    return calculatePackingList(selectedMenus, recipeData);
-  }, [selectedMenus, recipes]);
+    [menus]
+  );
 
+  const packingList: PackingItem[] = useMemo(() => {
+    return calculatePackingList(selectedMenus, menuData);
+  }, [selectedMenus, menuData]);
+
+  // Auto-select variants with single provider and stock > 0
   useEffect(() => {
     const newVariants = { ...selectedVariants };
     let changed = false;
@@ -168,7 +184,7 @@ export function OrderCalculator({
   const addMenu = () => {
     setSelectedMenus([
       ...selectedMenus,
-      { recipeId: "", recipeName: "", raciones: 0 },
+      { menuId: "", menuName: "", raciones: 0 },
     ]);
   };
 
@@ -182,19 +198,24 @@ export function OrderCalculator({
     value: string | number
   ) => {
     const newMenus = [...selectedMenus];
-    if (field === "recipeId") {
-      newMenus[index].recipeId = value as string;
-      newMenus[index].recipeName =
-        recipes.find((r) => r.id === value)?.nombre || "";
+    if (field === "menuId") {
+      newMenus[index].menuId = value as string;
+      newMenus[index].menuName =
+        menus.find((m) => m.id === value)?.nombre || "";
     } else {
       newMenus[index] = { ...newMenus[index], [field]: value };
     }
     setSelectedMenus(newMenus);
   };
 
+  const getSelectedMenuDishes = (menuId: string) => {
+    const menu = menus.find((m) => m.id === menuId);
+    return menu?.dishes || [];
+  };
+
   const handleSaveOrder = async () => {
     const validMenus = selectedMenus.filter(
-      (m) => m.recipeId && m.raciones > 0
+      (m) => m.menuId && m.raciones > 0
     );
     if (validMenus.length === 0) {
       toast.error("Agrega al menos un menú con raciones válidas.");
@@ -231,7 +252,7 @@ export function OrderCalculator({
           clientId: selectedClientId,
           nota,
           items: validMenus.map((m) => ({
-            recipeId: m.recipeId,
+            menuId: m.menuId,
             raciones: m.raciones,
           })),
           materials: packingList.map((item) => ({
@@ -273,7 +294,7 @@ export function OrderCalculator({
   return (
     <div className="flex flex-col gap-6 h-full overflow-hidden">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 shrink-0">
-        {/* PANEL IZQUIERDO: SELECCIÓN DE MENÚS */}
+        {/* PANEL IZQUIERDO */}
         <Card className="flex flex-col h-[60vh] overflow-hidden">
           <CardHeader className="border-b bg-muted/20 pb-4 shrink-0">
             <CardTitle className="text-xl text-primary">
@@ -281,7 +302,6 @@ export function OrderCalculator({
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
-            {/* Selección de Cliente */}
             <div className="space-y-2">
               <label className="text-sm font-semibold text-primary">
                 Cliente / Institución *
@@ -298,7 +318,6 @@ export function OrderCalculator({
               />
             </div>
 
-            {/* Selección de Operador */}
             <div className="space-y-2">
               <label className="text-sm font-semibold text-primary">
                 Operador Responsable *
@@ -335,53 +354,74 @@ export function OrderCalculator({
               </div>
 
               <div className="space-y-3">
-                {selectedMenus.map((menu, index) => (
-                  <div
-                    key={index}
-                    className="grid grid-cols-12 gap-3 items-center bg-muted/10 p-3 rounded-lg border border-primary/10"
-                  >
-                    <div className="col-span-12 md:col-span-7">
-                      <Combobox
-                        options={recipes.map((r) => ({
-                          label: r.nombre,
-                          value: r.id,
-                        }))}
-                        value={menu.recipeId}
-                        onValueChange={(val) =>
-                          updateMenu(index, "recipeId", val)
-                        }
-                        placeholder="Seleccionar menú..."
-                        className="h-9"
-                      />
+                {selectedMenus.map((menu, index) => {
+                  const menuDishes = getSelectedMenuDishes(menu.menuId);
+
+                  return (
+                    <div
+                      key={index}
+                      className="bg-muted/10 p-3 rounded-lg border border-primary/10 space-y-2"
+                    >
+                      <div className="grid grid-cols-12 gap-3 items-center">
+                        <div className="col-span-12 md:col-span-7">
+                          <Combobox
+                            options={menus.map((m) => ({
+                              label: m.nombre,
+                              value: m.id,
+                            }))}
+                            value={menu.menuId}
+                            onValueChange={(val) =>
+                              updateMenu(index, "menuId", val)
+                            }
+                            placeholder="Seleccionar menú..."
+                            className="h-9"
+                          />
+                        </div>
+                        <div className="col-span-10 md:col-span-4">
+                          <Input
+                            type="number"
+                            min="0"
+                            placeholder="Raciones"
+                            value={menu.raciones || ""}
+                            onChange={(e) =>
+                              updateMenu(
+                                index,
+                                "raciones",
+                                parseInt(e.target.value) || 0
+                              )
+                            }
+                            className="bg-white h-9"
+                          />
+                        </div>
+                        <div className="col-span-2 md:col-span-1 flex justify-end">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeMenu(index)}
+                            className="h-9 w-9 text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Preview de platos del menú seleccionado */}
+                      {menu.menuId && menuDishes.length > 0 && (
+                        <div className="flex flex-wrap gap-1 pt-1 border-t border-primary/10">
+                          {menuDishes.map((md) => (
+                            <Badge
+                              key={md.id}
+                              variant="outline"
+                              className="text-[10px] bg-slate-100 text-slate-700"
+                            >
+                              {md.dish?.componente?.name}: {md.dish?.nombre}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <div className="col-span-10 md:col-span-4">
-                      <Input
-                        type="number"
-                        min="0"
-                        placeholder="Raciones"
-                        value={menu.raciones || ""}
-                        onChange={(e) =>
-                          updateMenu(
-                            index,
-                            "raciones",
-                            parseInt(e.target.value) || 0
-                          )
-                        }
-                        className="bg-white h-9"
-                      />
-                    </div>
-                    <div className="col-span-2 md:col-span-1 flex justify-end">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeMenu(index)}
-                        className="h-9 w-9 text-destructive hover:bg-destructive/10"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
 
                 <Button
                   variant="outline"
@@ -430,7 +470,6 @@ export function OrderCalculator({
               </div>
             </div>
 
-            {/* Datos del Cliente + Operador */}
             <div className="mt-4 p-3 bg-white border rounded-md text-xs grid grid-cols-2 gap-x-4 gap-y-1 border-primary/20">
               {selectedClient && (
                 <>
@@ -450,23 +489,7 @@ export function OrderCalculator({
               {selectedOperator && (
                 <>
                   <div className="col-span-2 font-bold text-slate-700 text-sm mt-2 mb-1 uppercase border-t pt-1">
-                    {selectedOperator.nombreOperador}
-                  </div>
-                  <div>
-                    <span className="font-semibold">NIT OP:</span>{" "}
-                    {selectedOperator.nitOperador}
-                  </div>
-                  <div>
-                    <span className="font-semibold">MODELO:</span>{" "}
-                    {selectedOperator.modeloAtencion}
-                  </div>
-                  <div>
-                    <span className="font-semibold">BODEGA:</span>{" "}
-                    {selectedOperator.direccionBodega}
-                  </div>
-                  <div>
-                    <span className="font-semibold">MUNICIPIO:</span>{" "}
-                    {selectedOperator.municipioBodega}
+                    Operador: {selectedOperator.nombreOperador}
                   </div>
                 </>
               )}
@@ -479,14 +502,17 @@ export function OrderCalculator({
                   <span className="text-3xl">📦</span>
                 </div>
                 <p>
-                  Selecciona el cliente, operador, menús e ingresa raciones para
-                  calcular la explosión de materiales.
+                  Selecciona el cliente, operador, menús e ingresa raciones
+                  para calcular la explosión de materiales.
                 </p>
               </div>
             ) : (
               <Table>
                 <TableHeader className="bg-muted/30 sticky top-0 z-10 shadow-sm">
                   <TableRow>
+                    <TableHead className="font-semibold text-primary">
+                      Menú / Plato
+                    </TableHead>
                     <TableHead className="font-semibold text-primary">
                       Producto
                     </TableHead>
@@ -516,6 +542,48 @@ export function OrderCalculator({
 
                     return (
                       <TableRow key={index} className="hover:bg-accent/50">
+                        <TableCell className="text-xs text-muted-foreground">
+                          {/* Mostrar de qué platos viene este producto */}
+                          {(() => {
+                            const sources: string[] = [];
+                            for (const sm of selectedMenus) {
+                              const menu = menus.find(
+                                (m) => m.id === sm.menuId
+                              );
+                              if (!menu) continue;
+                              for (const md of menu.dishes || []) {
+                                const dish = md.dish;
+                                if (!dish) continue;
+                                const found = dish.ingredients?.find(
+                                  (ing) =>
+                                    ing.masterProductId ===
+                                    item.masterProductId
+                                );
+                                if (found) {
+                                  sources.push(
+                                  `${dish.componente}: ${dish.nombre}`
+                                );
+                                }
+                              }
+                            }
+                            return (
+                              <div className="space-y-0.5">
+                                {sources.length > 0 ? (
+                                  sources.map((s, i) => (
+                                    <div
+                                      key={i}
+                                      className="text-[10px] leading-tight"
+                                    >
+                                      {s}
+                                    </div>
+                                  ))
+                                ) : (
+                                  <span>—</span>
+                                )}
+                              </div>
+                            );
+                          })()}
+                        </TableCell>
                         <TableCell className="font-medium">
                           {item.productName}
                         </TableCell>
@@ -701,7 +769,7 @@ export function OrderCalculator({
         </Card>
       </div>
 
-      {/* MODAL: RESUMEN DEL PEDIDO */}
+      {/* MODAL RESUMEN DEL PEDIDO */}
       <Dialog open={isOrderModalOpen} onOpenChange={setIsOrderModalOpen}>
         <DialogContent className="w-[95vw] max-w-2xl max-h-[85vh] overflow-y-auto p-0 flex flex-col">
           <DialogHeader className="p-6 border-b shrink-0">

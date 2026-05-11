@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Edit, Trash2, Search, Info } from "lucide-react";
+import { Plus, Edit, Trash2, Search } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -29,9 +29,7 @@ interface FoodGroup {
   id: string;
   name: string;
   description: string | null;
-  _count?: {
-    masterProducts: number;
-  };
+  _count?: { masterProducts: number };
 }
 
 interface GroupListProps {
@@ -47,7 +45,7 @@ export function GroupList({ initialGroups }: GroupListProps) {
   const filteredGroups = initialGroups.filter(
     (g) =>
       g.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      g.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      (g.description || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleDelete = async (id: string) => {
@@ -98,12 +96,12 @@ export function GroupList({ initialGroups }: GroupListProps) {
                 {editingGroup ? "Editar Grupo Alimentario" : "Nuevo Grupo Alimentario"}
               </DialogTitle>
             </DialogHeader>
-            <GroupForm 
-              initialData={editingGroup} 
+            <GroupForm
+              initialData={editingGroup}
               onSuccess={() => {
                 setIsOpen(false);
                 router.refresh();
-              }} 
+              }}
             />
           </DialogContent>
         </Dialog>
@@ -113,10 +111,10 @@ export function GroupList({ initialGroups }: GroupListProps) {
         <Table>
           <TableHeader className="bg-slate-50/80">
             <TableRow>
-              <TableHead className="font-bold text-primary py-4">Nombre del Grupo</TableHead>
-              <TableHead className="font-bold text-primary py-4">Descripción / Items</TableHead>
-              <TableHead className="text-center font-bold text-primary py-4">Productos</TableHead>
-              <TableHead className="text-right font-bold text-primary py-4">Acciones</TableHead>
+              <TableHead className="font-bold text-primary py-4 w-[30%]">Nombre del Grupo</TableHead>
+              <TableHead className="font-bold text-primary py-4 w-[45%]">Descripción / Items</TableHead>
+              <TableHead className="text-center font-bold text-primary py-4 w-[10%]">Ítems</TableHead>
+              <TableHead className="text-right font-bold text-primary py-4 w-[15%]">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -129,29 +127,49 @@ export function GroupList({ initialGroups }: GroupListProps) {
             ) : (
               filteredGroups.map((g) => (
                 <TableRow key={g.id} className="hover:bg-slate-50/50 transition-colors">
-                  <TableCell className="font-bold text-slate-800 align-top max-w-[250px]">
-                    {g.name}
+                  <TableCell className="align-top py-4">
+                    <span
+                      className="font-bold text-slate-800 block truncate max-w-[280px]"
+                      title={g.name}
+                    >
+                      {g.name}
+                    </span>
                   </TableCell>
-                  <TableCell className="align-top">
+                  <TableCell className="align-top py-4">
                     {g.description ? (
-                      <p className="text-sm text-slate-600 line-clamp-3 hover:line-clamp-none transition-all duration-300">
+                      <p
+                        className="text-sm text-slate-600 line-clamp-3"
+                        title={g.description}
+                      >
                         {g.description}
                       </p>
                     ) : (
                       <span className="text-xs text-muted-foreground italic">Sin descripción</span>
                     )}
                   </TableCell>
-                  <TableCell className="text-center align-top">
+                  <TableCell className="text-center align-top py-4">
                     <Badge variant="secondary" className="font-bold">
                       {g._count?.masterProducts || 0}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right align-top">
+                  <TableCell className="text-right align-top py-4">
                     <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => openEditModal(g)} className="h-9 w-9 text-primary hover:bg-primary/10">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => openEditModal(g)}
+                        className="h-9 w-9 text-primary hover:bg-primary/10"
+                        title="Editar"
+                      >
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(g.id)} className="h-9 w-9 text-destructive hover:bg-destructive/10">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(g.id)}
+                        className="h-9 w-9 text-destructive hover:bg-destructive/10"
+                        title="Eliminar"
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>

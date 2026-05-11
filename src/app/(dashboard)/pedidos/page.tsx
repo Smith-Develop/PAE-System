@@ -3,13 +3,21 @@ import { OrderCalculator } from "@/components/pedidos/order-calculator";
 import { Calculator } from "lucide-react";
 
 export default async function PedidosPage() {
-  const [recipes, operators, masterProducts, clients] = await Promise.all([
-    prisma.recipe.findMany({
+  const [menus, operators, masterProducts, clients] = await Promise.all([
+    prisma.menu.findMany({
       include: {
-        ingredients: {
+        dishes: {
           include: {
-            masterProduct: true,
+            dish: {
+              include: {
+                componente: true,
+                ingredients: {
+                  include: { masterProduct: true },
+                },
+              },
+            },
           },
+          orderBy: { orden: "asc" },
         },
       },
       orderBy: { nombre: "asc" },
@@ -39,15 +47,15 @@ export default async function PedidosPage() {
             <Calculator className="h-6 w-6" /> Registro de Pedidos
           </h1>
           <p className="text-muted-foreground">
-            Ingresa las raciones para realizar la explosión de materiales y
-            generar la lista de empaque.
+            Selecciona un menú e ingresa las raciones para generar la lista de
+            empaque.
           </p>
         </div>
       </div>
 
       <div className="flex-1">
         <OrderCalculator
-          recipes={recipes}
+          menus={menus}
           operators={operators}
           masterProducts={masterProducts}
           clients={clients}

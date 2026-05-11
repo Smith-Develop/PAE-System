@@ -54,25 +54,38 @@ export const productSchema = z.object({
 });
 export type ProductFormData = z.infer<typeof productSchema>;
 
-// --- Recetas ---
-export const recipeIngredientSchema = z.object({
-  componente: z.string().min(1, "El componente es requerido"),
-  preparacion: z.string().min(1, "La preparación es requerida"),
+// --- Platos (Dish) ---
+export const dishIngredientSchema = z.object({
   masterProductId: z.string().min(1, "Seleccione un producto"),
   cantidadBrutaUnitaria: z.coerce
     .number()
     .positive("La cantidad debe ser mayor a 0"),
 });
 
-export const recipeSchema = z.object({
-  nombre: z.string().min(1, "El nombre de la receta es requerido"),
+export const dishSchema = z.object({
+  nombre: z.string().min(1, "El nombre del plato es requerido"),
+  componenteId: z.string().min(1, "Seleccione un componente"),
   descripcion: z.string().optional().default(""),
   ingredients: z
-    .array(recipeIngredientSchema)
+    .array(dishIngredientSchema)
     .min(1, "Debe agregar al menos un ingrediente"),
 });
 
-export type RecipeFormData = z.infer<typeof recipeSchema>;
+export type DishFormData = z.infer<typeof dishSchema>;
+
+// --- Menús ---
+export const menuDishSchema = z.object({
+  dishId: z.string().min(1, "Seleccione un plato"),
+  orden: z.coerce.number().int().min(0).default(0),
+});
+
+export const menuSchema = z.object({
+  nombre: z.string().min(1, "El nombre del menú es requerido"),
+  descripcion: z.string().optional().default(""),
+  dishes: z.array(menuDishSchema).min(1, "Debe agregar al menos un plato"),
+});
+
+export type MenuFormData = z.infer<typeof menuSchema>;
 
 // --- Compras ---
 export const purchaseSchema = z.object({
@@ -103,7 +116,7 @@ export type OperatorFormData = z.infer<typeof operatorSchema>;
 
 // --- Pedidos ---
 export const orderItemSchema = z.object({
-  recipeId: z.string().min(1, "Seleccione una receta"),
+  menuId: z.string().min(1, "Seleccione un menú"),
   raciones: z.coerce.number().int().positive("Las raciones deben ser mayores a 0"),
 });
 

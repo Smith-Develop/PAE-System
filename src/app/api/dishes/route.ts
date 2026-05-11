@@ -1,23 +1,22 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { recipeSchema } from "@/lib/validations";
+import { dishSchema } from "@/lib/validations";
 
 export async function GET() {
   try {
-    const recipes = await prisma.recipe.findMany({
+    const dishes = await prisma.dish.findMany({
       include: {
+        componente: true,
         ingredients: {
-          include: {
-            masterProduct: true,
-          },
+          include: { masterProduct: true },
         },
       },
-      orderBy: { nombre: "asc" },
+      orderBy: { componente: { name: "asc" } },
     });
-    return NextResponse.json(recipes);
+    return NextResponse.json(dishes);
   } catch (error) {
     return NextResponse.json(
-      { error: "Error al obtener las recetas" },
+      { error: "Error al obtener los platos" },
       { status: 500 }
     );
   }
@@ -26,7 +25,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const result = recipeSchema.safeParse(body);
+    const result = dishSchema.safeParse(body);
 
     if (!result.success) {
       return NextResponse.json(
@@ -35,29 +34,31 @@ export async function POST(request: Request) {
       );
     }
 
-    const recipe = await prisma.recipe.create({
+    const dish = await prisma.dish.create({
       data: {
         nombre: result.data.nombre,
+        componenteId: result.data.componenteId,
         descripcion: result.data.descripcion,
         ingredients: {
-          create: result.data.ingredients.map((ing: any) => ({
-            componente: ing.componente,
-            preparacion: ing.preparacion,
-            cantidadBrutaUnitaria: ing.cantidadBrutaUnitaria,
+          create: result.data.ingredients.map((ing) => ({
             masterProductId: ing.masterProductId,
+            cantidadBrutaUnitaria: ing.cantidadBrutaUnitaria,
           })),
         },
       },
       include: {
-        ingredients: true,
+        componente: true,
+        ingredients: {
+          include: { masterProduct: true },
+        },
       },
     });
 
-    return NextResponse.json(recipe, { status: 201 });
+    return NextResponse.json(dish, { status: 201 });
   } catch (error) {
-    console.error(error);
+    console.error("Error creating dish:", error);
     return NextResponse.json(
-      { error: "Error al crear la receta" },
+      { error: "Error al crear el plato" },
       { status: 500 }
     );
   }

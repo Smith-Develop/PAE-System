@@ -19,7 +19,7 @@ const fontMono = Fira_Code({
 });
 
 export const metadata: Metadata = {
-  title: "PAE Antioquia",
+  title: "PAE System",
   description: "Sistema de gestión del Programa de Alimentación Escolar (PAE)",
 };
 

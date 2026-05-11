@@ -118,44 +118,47 @@ async function main() {
       create: { name: foodGroupName },
     });
 
-    // Product
+    // Product Data
     const alimento = row[19]?.trim();
     const descripcionMarca = row[20]?.trim();
     const registroSanitario = row[21]?.trim();
     const unidadMedida = row[28]?.trim(); // "Kilogramos, Litros o Unidades"
 
-    if (!alimento || !descripcionMarca) continue;
+    if (!alimento) continue;
 
-    // We use a combination to find existing products or just create new ones
-    // Since there isn't a unique constraint on Product name in the schema (it has cuid id),
-    // we should check if a product with same name/provider/group exists.
-    const existingProduct = await prisma.product.findFirst({
-      where: {
-        alimento,
-        descripcionMarca,
-        providerId: provider.id,
+    // 1. Upsert MasterProduct (Generic)
+    const masterProduct = await prisma.masterProduct.upsert({
+      where: { nombre: alimento },
+      update: {
+        unidadMedida,
+        foodGroupId: foodGroup.id,
+      },
+      create: {
+        nombre: alimento,
+        unidadMedida,
         foodGroupId: foodGroup.id,
       },
     });
 
-    if (!existingProduct) {
-      await prisma.product.create({
-        data: {
-          alimento,
-          descripcionMarca,
-          registroSanitario,
-          unidadMedida,
+    // 2. Upsert Product Variant (Provider specific)
+    await prisma.product.upsert({
+      where: {
+        masterProductId_providerId_descripcionMarca: {
+          masterProductId: masterProduct.id,
           providerId: provider.id,
-          foodGroupId: foodGroup.id,
+          descripcionMarca,
         },
-      });
-    } else {
-        // Update unit if it changed
-        await prisma.product.update({
-            where: { id: existingProduct.id },
-            data: { registroSanitario, unidadMedida }
-        });
-    }
+      },
+      update: {
+        registroSanitario,
+      },
+      create: {
+        masterProductId: masterProduct.id,
+        providerId: provider.id,
+        descripcionMarca,
+        registroSanitario,
+      },
+    });
   }
 
   console.log("Import completed successfully.");

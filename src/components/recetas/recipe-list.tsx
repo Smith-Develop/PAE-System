@@ -17,14 +17,14 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { RecipeForm } from "./recipe-form";
 import { RecipeFormData } from "@/lib/validations";
-import { Recipe, Product } from "@/types";
+import { Recipe, MasterProduct } from "@/types";
 
 interface RecipeListProps {
   recipes: Recipe[];
-  products: Product[];
+  masterProducts: MasterProduct[];
 }
 
-export function RecipeList({ recipes, products }: RecipeListProps) {
+export function RecipeList({ recipes, masterProducts }: RecipeListProps) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -110,7 +110,7 @@ export function RecipeList({ recipes, products }: RecipeListProps) {
             <div className="flex-1 overflow-y-auto p-6">
               <RecipeForm 
                 initialData={editingRecipe} 
-                products={products}
+                masterProducts={masterProducts}
                 onSubmit={onSubmit} 
                 isSubmitting={isSubmitting} 
               />
@@ -140,7 +140,7 @@ export function RecipeList({ recipes, products }: RecipeListProps) {
                 <div className="space-y-1">
                   {r.ingredients.slice(0, 3).map((ing) => (
                     <div key={ing.id} className="text-xs text-muted-foreground flex justify-between">
-                      <span>• {ing.product?.alimento || 'Producto'}</span>
+                      <span>• {ing.masterProduct?.nombre || 'Producto'}</span>
                       <span>{ing.cantidadBrutaUnitaria} g/ml</span>
                     </div>
                   ))}
@@ -176,7 +176,7 @@ export function RecipeList({ recipes, products }: RecipeListProps) {
                               <div key={ing.id} className="grid grid-cols-4 gap-4 p-4 text-sm items-center hover:bg-slate-50 transition-colors">
                                 <div className="font-medium">{ing.componente}</div>
                                 <div>{ing.preparacion}</div>
-                                <div className="text-muted-foreground italic">{ing.product?.alimento}</div>
+                                <div className="text-muted-foreground italic">{ing.masterProduct?.nombre}</div>
                                 <div className="text-right font-mono font-bold text-lg text-primary">{ing.cantidadBrutaUnitaria}</div>
                               </div>
                             ))}

@@ -29,12 +29,12 @@ export async function PUT(
         nombre: result.data.nombre,
         descripcion: result.data.descripcion,
         ingredients: {
-          create: result.data.ingredients.map((ing) => ({
-            componente: ing.componente,
-            preparacion: ing.preparacion,
-            cantidadBrutaUnitaria: ing.cantidadBrutaUnitaria,
-            productId: ing.productId,
-          })),
+            create: result.data.ingredients.map((ing) => ({
+              componente: ing.componente,
+              preparacion: ing.preparacion,
+              cantidadBrutaUnitaria: ing.cantidadBrutaUnitaria,
+              masterProductId: ing.masterProductId,
+            })),
         },
       },
       include: {

@@ -1,7 +1,7 @@
 import type { PackingItem, SelectedMenu } from "@/types";
 
 interface IngredientData {
-  productId: string;
+  masterProductId: string;
   productName: string;
   unit: string;
   cantidadBrutaUnitaria: number; // en gramos o mililitros
@@ -18,7 +18,7 @@ interface RecipeData {
  * Calcula la lista de empaque consolidada a partir de los menús seleccionados.
  * 
  * Fórmula: (Cantidad Bruta en gramos × Raciones) / 1000 = Total en Kg o L
- * Agrupa ingredientes idénticos (mismo productId) sumando cantidades.
+ * Agrupa ingredientes idénticos (mismo masterProductId) sumando cantidades.
  */
 export function calculatePackingList(
   selectedMenus: SelectedMenu[],
@@ -34,13 +34,13 @@ export function calculatePackingList(
       // Fórmula: (gramos * raciones) / 1000 = Kg o L
       const quantity = (ingredient.cantidadBrutaUnitaria * menu.raciones) / 1000;
 
-      const existing = productMap.get(ingredient.productId);
+      const existing = productMap.get(ingredient.masterProductId);
       if (existing) {
         // Agrupar: sumar cantidades del mismo producto
         existing.totalQuantity = roundTo3(existing.totalQuantity + quantity);
       } else {
-        productMap.set(ingredient.productId, {
-          productId: ingredient.productId,
+        productMap.set(ingredient.masterProductId, {
+          masterProductId: ingredient.masterProductId,
           productName: ingredient.productName,
           unit: ingredient.unit,
           totalQuantity: roundTo3(quantity),

@@ -3,19 +3,24 @@ import { RecipeList } from "@/components/recetas/recipe-list";
 import { ChefHat } from "lucide-react";
 
 export default async function RecetasPage() {
-  const [recipes, products] = await Promise.all([
+  const [recipes, masterProducts] = await Promise.all([
     prisma.recipe.findMany({
       include: {
         ingredients: {
           include: {
-            product: true,
+            masterProduct: true,
           },
         },
       },
       orderBy: { nombre: "asc" },
     }),
-    prisma.product.findMany({
-      orderBy: { alimento: "asc" },
+    prisma.masterProduct.findMany({
+      include: {
+        providerProducts: {
+          select: { currentStock: true }
+        }
+      },
+      orderBy: { nombre: "asc" },
     }),
   ]);
 
@@ -32,7 +37,7 @@ export default async function RecetasPage() {
         </div>
       </div>
 
-      <RecipeList recipes={recipes} products={products} />
+      <RecipeList recipes={recipes} masterProducts={masterProducts} />
     </div>
   );
 }

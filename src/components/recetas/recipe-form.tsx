@@ -24,16 +24,16 @@ import {
 } from "@/components/ui/select";
 import { Combobox } from "@/components/ui/combobox";
 import { Textarea } from "@/components/ui/textarea";
-import { Recipe, Product } from "@/types";
+import { Recipe, MasterProduct } from "@/types";
 
 interface RecipeFormProps {
   initialData?: Recipe | null;
-  products: Product[];
+  masterProducts: MasterProduct[];
   onSubmit: (data: RecipeFormData) => void;
   isSubmitting: boolean;
 }
 
-export function RecipeForm({ initialData, products, onSubmit, isSubmitting }: RecipeFormProps) {
+export function RecipeForm({ initialData, masterProducts, onSubmit, isSubmitting }: RecipeFormProps) {
   const form = useForm<RecipeFormData>({
     resolver: zodResolver(recipeSchema) as any,
     defaultValues: initialData ? {
@@ -42,13 +42,13 @@ export function RecipeForm({ initialData, products, onSubmit, isSubmitting }: Re
       ingredients: initialData.ingredients.map(ing => ({
         componente: ing.componente,
         preparacion: ing.preparacion,
-        productId: ing.productId,
+        masterProductId: ing.masterProductId,
         cantidadBrutaUnitaria: ing.cantidadBrutaUnitaria
       }))
     } : {
       nombre: "",
       descripcion: "",
-      ingredients: [{ componente: "", preparacion: "", productId: "", cantidadBrutaUnitaria: 0 }],
+      ingredients: [{ componente: "", preparacion: "", masterProductId: "", cantidadBrutaUnitaria: 0 }],
     },
   });
 
@@ -92,7 +92,7 @@ export function RecipeForm({ initialData, products, onSubmit, isSubmitting }: Re
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => append({ componente: "", preparacion: "", productId: "", cantidadBrutaUnitaria: 0 })}
+              onClick={() => append({ componente: "", preparacion: "", masterProductId: "", cantidadBrutaUnitaria: 0 })}
             >
               <Plus className="mr-2 h-4 w-4" /> Agregar Ingrediente
             </Button>
@@ -148,21 +148,28 @@ export function RecipeForm({ initialData, products, onSubmit, isSubmitting }: Re
                   />
                   <FormField
                     control={form.control}
-                    name={`ingredients.${index}.productId`}
-                    render={({ field }) => (
-                      <FormItem className="col-span-3 w-full">
-                        <FormLabel className="md:hidden text-xs">Producto</FormLabel>
-                        <FormControl>
-                          <Combobox
-                            options={products.map(p => ({ label: `${p.alimento} (${p.provider?.razonSocial})`, value: p.id }))}
-                            value={field.value}
-                            onValueChange={field.onChange}
-                            placeholder="Seleccionar..."
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                    name={`ingredients.${index}.masterProductId`}
+                    render={({ field }) => {
+                      // Filtrar productos que tienen stock > 0 en alguna de sus variantes
+                      const availableProducts = masterProducts.filter(p => 
+                        p.providerProducts?.some(v => v.currentStock > 0)
+                      );
+
+                      return (
+                        <FormItem className="col-span-3 w-full">
+                          <FormLabel className="md:hidden text-xs">Producto</FormLabel>
+                          <FormControl>
+                            <Combobox
+                              options={availableProducts.map(p => ({ label: p.nombre, value: p.id }))}
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              placeholder="Seleccionar..."
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      );
+                    }}
                   />
                   <FormField
                     control={form.control}

@@ -32,7 +32,8 @@ export function StockList({ initialProducts }: StockListProps) {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   const filteredProducts = initialProducts.filter((p) =>
-    p.alimento.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.masterProduct?.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.descripcionMarca.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.provider?.razonSocial.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -78,12 +79,12 @@ export function StockList({ initialProducts }: StockListProps) {
                 filteredProducts.map((p) => (
                   <TableRow key={p.id} className="hover:bg-slate-50/80 transition-colors">
                     <TableCell>
-                      <div className="font-bold text-slate-800">{p.alimento}</div>
+                      <div className="font-bold text-slate-800">{p.masterProduct?.nombre}</div>
                       <div className="text-xs text-muted-foreground italic">{p.descripcionMarca}</div>
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary" className="font-semibold bg-slate-100 text-slate-700">
-                        {p.foodGroup?.name}
+                        {p.masterProduct?.foodGroup?.name}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -98,7 +99,7 @@ export function StockList({ initialProducts }: StockListProps) {
                           {p.currentStock.toLocaleString("es-CO", { minimumFractionDigits: 1 })}
                         </span>
                         <span className="text-[10px] font-bold text-muted-foreground uppercase">
-                          {p.unidadMedida}
+                          {p.masterProduct?.unidadMedida}
                         </span>
                       </div>
                     </TableCell>
@@ -120,7 +121,7 @@ export function StockList({ initialProducts }: StockListProps) {
           <DialogHeader className="p-6 border-b bg-muted/20">
             <DialogTitle className="flex items-center gap-2 text-2xl font-bold">
               <History className="h-6 w-6 text-primary" />
-              Historial de Transacciones: {selectedProduct?.alimento}
+              Historial de Transacciones: {selectedProduct?.masterProduct?.nombre}
             </DialogTitle>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto p-6">

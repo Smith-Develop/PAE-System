@@ -5,7 +5,15 @@ import { productSchema } from "@/lib/validations";
 export async function GET() {
   try {
     const products = await prisma.product.findMany({
-      orderBy: { alimento: "asc" },
+      include: {
+        masterProduct: {
+          include: { foodGroup: true }
+        },
+        provider: true,
+      },
+      orderBy: { 
+        masterProduct: { nombre: "asc" } 
+      },
     });
     return NextResponse.json(products);
   } catch (error) {
@@ -29,11 +37,22 @@ export async function POST(request: Request) {
     }
 
     const product = await prisma.product.create({
-      data: result.data,
+      data: {
+        masterProductId: result.data.masterProductId,
+        providerId: result.data.providerId,
+        descripcionMarca: result.data.descripcionMarca,
+        registroSanitario: result.data.registroSanitario,
+        currentStock: result.data.currentStock,
+      },
+      include: {
+        masterProduct: true,
+        provider: true,
+      }
     });
 
     return NextResponse.json(product, { status: 201 });
   } catch (error) {
+    console.error(error);
     return NextResponse.json(
       { error: "Error al crear el producto" },
       { status: 500 }

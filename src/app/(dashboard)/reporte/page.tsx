@@ -5,52 +5,58 @@ import { FileSpreadsheet } from "lucide-react";
 export default async function ReportePage({
   searchParams,
 }: {
-  searchParams: Promise<{ month?: string }>;
+  searchParams: Promise<{ month?: string; clientId?: string }>;
 }) {
-  const { month } = await searchParams;
-  
-  // Lógica de filtrado por mes
-  let whereClause = {};
+  const { month, clientId } = await searchParams;
+
+  let whereClause: any = {};
+
   if (month) {
-    const [year, m] = month.split('-');
+    const [year, m] = month.split("-");
     const startDate = new Date(parseInt(year), parseInt(m) - 1, 1);
     const endDate = new Date(parseInt(year), parseInt(m), 0, 23, 59, 59);
-    
-    whereClause = {
-      fechaCompra: {
-        gte: startDate,
-        lte: endDate,
-      },
-      cantidadComprada: {
-        gt: 0 // Excluir compras con cantidad 0
-      }
-    };
-  } else {
-    // Si no hay filtro, solo exluimos los de 0
-    whereClause = {
-      cantidadComprada: {
-        gt: 0
-      }
+
+    whereClause.fechaCompra = {
+      gte: startDate,
+      lte: endDate,
     };
   }
 
-  const purchases = await prisma.purchase.findMany({
-    where: whereClause,
-    include: {
-      product: {
-        include: {
-          provider: true,
-          foodGroup: true,
-        }
-      },
-      operator: true,
-    },
-    orderBy: { fechaCompra: "asc" },
-  });
+  // Excluir compras con cantidad 0
+  whereClause.cantidadComprada = { gt: 0 };
 
-  // Mapear los datos según las 30 columnas exactas
+  // Si hay filtro de cliente, buscar los purchases donde el producto pertenece
+  // a purchases con ese clientId, o si tuviéramos clientId directo en Purchase...
+  // Por ahora filtramos a nivel de Purchase (necesita migración previa)
+  if (clientId) {
+    whereClause.clientId = clientId;
+  }
+
+  const [purchases, clients] = await Promise.all([
+    prisma.purchase.findMany({
+      where: whereClause,
+      include: {
+        product: {
+          include: {
+            provider: true,
+            masterProduct: {
+              include: { foodGroup: true },
+            },
+          },
+        },
+        operator: true,
+        client: true,
+      },
+      orderBy: { fechaCompra: "asc" },
+    }),
+    prisma.client.findMany({
+      orderBy: { nombre: "asc" },
+    }),
+  ]);
+
   const reportData = purchases.map((purchase) => {
     const product = purchase.product;
+    const master = product.masterProduct;
     const provider = product.provider;
     const operator = purchase.operator || {
       nombreOperador: "",
@@ -63,7 +69,7 @@ export default async function ReportePage({
       telefonoBodega: "",
     };
     const dateObj = new Date(purchase.fechaCompra);
-    const mesFormat = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
+    const mesFormat = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, "0")}`;
 
     return {
       "NOMBRE DEL OPERADOR": operator.nombreOperador,
@@ -84,48 +90,66 @@ export default async function ReportePage({
       "CORREO": provider.correo || "",
       "TIPO ACTIVIDAD": provider.tipoActividad,
       "COMPRA LOCAL": provider.compraLocal ? "SI" : "NO",
-      "GRUPO ALIMENTOS (Res 719)": product.foodGroup?.name || "",
-      "ALIMENTOS (Res 719)": product.alimento,
+      "GRUPO ALIMENTOS (Res 719)": master.foodGroup?.name || "",
+      "ALIMENTOS (Res 719)": master.nombre,
       "DESCRIPCIÓN Y MARCA": product.descripcionMarca,
       "REGISTRO SANITARIO": product.registroSanitario || "",
       "FECHA VISITA": provider.fechaVisita || "",
       "CONCEPTO SANITARIO": provider.conceptoSanitario || "",
       "ENTIDAD EMISORA": provider.entidadEmisora || "",
       "MES COMPRA": mesFormat,
-      "ALIMENTO COMPRADO": product.alimento,
+      "ALIMENTO COMPRADO": master.nombre,
       "CANTIDAD TOTAL COMPRADA": purchase.cantidadComprada,
-      "UNIDAD": product.unidadMedida,
+      "UNIDAD": master.unidadMedida,
       "VALOR TOTAL": purchase.valorTotal,
     };
   });
 
   return (
     <div className="p-6 space-y-6 w-full max-w-full overflow-hidden">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="space-y-1">
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2 text-primary">
-            <FileSpreadsheet className="h-6 w-6" /> Reporte Gobernación (Res 719)
+            <FileSpreadsheet className="h-6 w-6" /> Reporte Gobernación (Res
+            719)
           </h1>
           <p className="text-muted-foreground">
             Tabla consolidada cruzando compras y productos. Listo para exportar.
           </p>
         </div>
-        
-        {/* Aquí iría un componente cliente para cambiar la URL con el parametro ?month=YYYY-MM */}
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Filtrar por mes:</span>
-          <form className="flex gap-2">
-            <input 
-              type="month" 
-              name="month" 
-              defaultValue={month} 
-              className="border rounded px-2 py-1 bg-white"
+
+        <form className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium">Mes:</label>
+            <input
+              type="month"
+              name="month"
+              defaultValue={month}
+              className="border rounded px-2 py-1 bg-white text-sm h-9"
             />
-            <button type="submit" className="bg-primary text-white px-4 py-1 rounded-md text-sm font-bold hover:bg-primary/90 transition-colors">
-              Aplicar
-            </button>
-          </form>
-        </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium">Cliente:</label>
+            <select
+              name="clientId"
+              defaultValue={clientId || ""}
+              className="border rounded px-2 py-1 bg-white text-sm h-9 max-w-[220px]"
+            >
+              <option value="">Todos los clientes</option>
+              {clients.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
+            type="submit"
+            className="bg-primary text-white px-4 py-1 rounded-md text-sm font-bold hover:bg-primary/90 transition-colors h-9"
+          >
+            Aplicar
+          </button>
+        </form>
       </div>
 
       <ReportTable reportData={reportData} />

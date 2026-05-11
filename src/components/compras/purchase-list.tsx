@@ -43,7 +43,8 @@ export function PurchaseList({ initialPurchases, products, operators }: Purchase
 
   const filteredPurchases = initialPurchases.filter(
     (p) =>
-      p.product?.alimento.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.product?.masterProduct?.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.product?.descripcionMarca.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.product?.provider?.razonSocial.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.operator?.nombreOperador.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -165,10 +166,13 @@ export function PurchaseList({ initialPurchases, products, operators }: Purchase
                   <TableCell>
                     <div className="font-medium text-xs">{p.operator?.nombreOperador}</div>
                   </TableCell>
-                  <TableCell className="font-medium">{p.product?.alimento}</TableCell>
+                  <TableCell className="font-medium">
+                    {p.product?.masterProduct?.nombre}
+                    <div className="text-[10px] text-muted-foreground italic">{p.product?.descripcionMarca}</div>
+                  </TableCell>
                   <TableCell className="text-xs">{p.product?.provider?.razonSocial}</TableCell>
                   <TableCell className="text-right">
-                    {p.cantidadComprada} <span className="text-muted-foreground text-xs">{p.product?.unidadMedida}</span>
+                    {p.cantidadComprada} <span className="text-muted-foreground text-xs">{p.product?.masterProduct?.unidadMedida}</span>
                   </TableCell>
                   <TableCell className="text-right font-mono">
                     ${p.valorTotal.toLocaleString("es-CO")}

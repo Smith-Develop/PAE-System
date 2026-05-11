@@ -1,10 +1,42 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+export async function GET() {
+  try {
+    const orders = await prisma.order.findMany({
+      include: {
+        client: true,
+        operator: true,
+        items: {
+          select: { recipeId: true, raciones: true },
+        },
+        materials: {
+          include: {
+            masterProduct: true,
+            product: {
+              include: {
+                provider: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { fecha: "desc" },
+      take: 50,
+    });
+    return NextResponse.json(orders);
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Error al obtener pedidos" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { items, operatorId, nota } = body;
+    const { items, materials, operatorId, clientId, nota } = body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
@@ -20,12 +52,18 @@ export async function POST(request: Request) {
       );
     }
 
-    // Usar una transacción de Prisma para asegurar consistencia
+    if (!clientId) {
+      return NextResponse.json(
+        { error: "Debe seleccionar un cliente" },
+        { status: 400 }
+      );
+    }
+
     const order = await prisma.$transaction(async (tx) => {
-      // 1. Crear el pedido
       const newOrder = await tx.order.create({
         data: {
           operatorId,
+          clientId,
           nota,
           items: {
             create: items.map((item: { recipeId: string; raciones: number }) => ({
@@ -33,43 +71,48 @@ export async function POST(request: Request) {
               raciones: item.raciones,
             })),
           },
+          materials: {
+            create: (materials || []).map((mat: any) => ({
+              masterProductId: mat.masterProductId,
+              productId: mat.productId,
+              cantidadTotal: mat.cantidadTotal,
+            })),
+          }
         },
+        include: {
+          client: true,
+          operator: true,
+          items: true,
+          materials: {
+            include: {
+              masterProduct: true,
+              product: {
+                include: { provider: true }
+              }
+            }
+          }
+        }
       });
 
-      // 2. Explosión de materiales y deducción de stock
-      for (const item of items) {
-        // Obtener ingredientes de la receta
-        const recipe = await tx.recipe.findUnique({
-          where: { id: item.recipeId },
-          include: { ingredients: true },
-        });
-
-        if (recipe) {
-          for (const ingredient of recipe.ingredients) {
-            // Calcular cantidad total (gramos/ml a Kilos/Litros)
-            // (Cantidad Bruta * Raciones) / 1000
-            const quantityToSubtract = (ingredient.cantidadBrutaUnitaria * item.raciones) / 1000;
-
-            // Actualizar stock del producto
-            await tx.product.update({
-              where: { id: ingredient.productId },
-              data: {
-                currentStock: {
-                  decrement: quantityToSubtract,
-                },
+      if (materials && Array.isArray(materials)) {
+        for (const mat of materials) {
+          await tx.product.update({
+            where: { id: mat.productId },
+            data: {
+              currentStock: {
+                decrement: mat.cantidadTotal,
               },
-            });
+            },
+          });
 
-            // Registrar transacción de stock
-            await tx.stockTransaction.create({
-              data: {
-                productId: ingredient.productId,
-                type: "SALIDA",
-                quantity: quantityToSubtract,
-                reason: `Pedido #${newOrder.id} - Receta: ${recipe.nombre}`,
-              },
-            });
-          }
+          await tx.stockTransaction.create({
+            data: {
+              productId: mat.productId,
+              type: "SALIDA",
+              quantity: mat.cantidadTotal,
+              reason: `Pedido #${newOrder.id} - Explosión de materiales`,
+            },
+          });
         }
       }
 

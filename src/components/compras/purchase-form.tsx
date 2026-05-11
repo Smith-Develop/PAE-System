@@ -104,7 +104,10 @@ export function PurchaseForm({ initialData, products, operators, onSubmit, isSub
                   <FormLabel className="text-slate-600 font-semibold uppercase text-xs tracking-wider">Producto / Insumo *</FormLabel>
                   <FormControl>
                     <Combobox
-                      options={products.map(p => ({ label: `${p.alimento} - ${p.provider?.razonSocial}`, value: p.id }))}
+                      options={products.map(p => ({ 
+                        label: `${p.masterProduct?.nombre} (${p.provider?.razonSocial} - ${p.descripcionMarca})`, 
+                        value: p.id 
+                      }))}
                       value={field.value}
                       onValueChange={field.onChange}
                       placeholder="Seleccione el producto..."

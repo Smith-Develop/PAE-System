@@ -18,29 +18,47 @@ export const providerSchema = z.object({
 });
 export type ProviderFormData = z.infer<typeof providerSchema>;
 
+// --- Clientes (Instituciones Educativas) ---
+export const clientSchema = z.object({
+  nombre: z.string().min(1, "El nombre del cliente es requerido"),
+  nit: z.string().min(1, "El NIT es requerido"),
+  direccion: z.string().optional().default(""),
+  municipio: z.string().optional().default(""),
+  contacto: z.string().optional().default(""),
+  telefono: z.string().optional().default(""),
+  correo: z.string().optional().default(""),
+});
+export type ClientFormData = z.infer<typeof clientSchema>;
+
 // --- Grupo Alimentos ---
 export const foodGroupSchema = z.object({
   name: z.string().min(1, "El nombre del grupo es requerido"),
 });
 export type FoodGroupFormData = z.infer<typeof foodGroupSchema>;
 
-// --- Productos (Maestro) ---
-export const productSchema = z.object({
-  providerId: z.string().min(1, "Seleccione un proveedor"),
+// --- Productos Maestros (Catálogo) ---
+export const masterProductSchema = z.object({
+  nombre: z.string().min(1, "El nombre es requerido"),
+  unidadMedida: z.string().min(1, "La unidad de medida es requerida"),
   foodGroupId: z.string().min(1, "Seleccione un grupo de alimentos"),
-  alimento: z.string().min(1, "El alimento es requerido"),
+});
+export type MasterProductFormData = z.infer<typeof masterProductSchema>;
+
+// --- Productos (Variante por Proveedor) ---
+export const productSchema = z.object({
+  masterProductId: z.string().min(1, "Seleccione un producto del catálogo"),
+  providerId: z.string().min(1, "Seleccione un proveedor"),
   descripcionMarca: z.string().min(1, "La descripción/marca es requerida"),
   registroSanitario: z.string().optional().default(""),
-  unidadMedida: z.string().min(1, "La unidad de medida es requerida"),
+  currentStock: z.coerce.number().min(0, "El stock no puede ser negativo"),
 });
-
 export type ProductFormData = z.infer<typeof productSchema>;
 
 // --- Recetas ---
 export const recipeIngredientSchema = z.object({
   componente: z.string().min(1, "El componente es requerido"),
   preparacion: z.string().min(1, "La preparación es requerida"),
-  productId: z.string().min(1, "Seleccione un producto"),
+  masterProductId: z.string().min(1, "Seleccione un producto"),
   cantidadBrutaUnitaria: z.coerce
     .number()
     .positive("La cantidad debe ser mayor a 0"),

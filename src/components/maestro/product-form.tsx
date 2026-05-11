@@ -3,8 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { productSchema, ProductFormData } from "@/lib/validations";
-import { Product, Provider, FoodGroup } from "@/types";
-
+import { MasterProduct, Product, Provider, FoodGroup } from "@/types";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -15,41 +14,33 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Combobox } from "@/components/ui/combobox";
-import { PackageSearch, Info, Database } from "lucide-react";
+import { PackageSearch, Info } from "lucide-react";
 
 interface ProductFormProps {
   initialData?: Product | null;
   providers: Provider[];
+  masterProducts: MasterProduct[];
   foodGroups: FoodGroup[];
   onSubmit: (data: ProductFormData) => void;
   isSubmitting: boolean;
 }
 
-export function ProductForm({ initialData, providers, foodGroups, onSubmit, isSubmitting }: ProductFormProps) {
+export function ProductForm({ initialData, providers, masterProducts, foodGroups, onSubmit, isSubmitting }: ProductFormProps) {
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema) as any,
     defaultValues: initialData ? {
-      alimento: initialData.alimento,
-      foodGroupId: initialData.foodGroupId,
+      masterProductId: initialData.masterProductId,
+      providerId: initialData.providerId,
       descripcionMarca: initialData.descripcionMarca,
       registroSanitario: initialData.registroSanitario,
-      unidadMedida: initialData.unidadMedida,
-      providerId: initialData.providerId,
+      currentStock: initialData.currentStock,
     } : {
-      alimento: "",
-      foodGroupId: "",
+      masterProductId: "",
+      providerId: "",
       descripcionMarca: "",
       registroSanitario: "",
-      unidadMedida: "Kilogramos",
-      providerId: "",
+      currentStock: 0,
     },
   });
 
@@ -68,11 +59,18 @@ export function ProductForm({ initialData, providers, foodGroups, onSubmit, isSu
 
             <FormField
               control={form.control}
-              name="alimento"
+              name="masterProductId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-600 font-semibold uppercase text-xs tracking-wider">Nombre del Alimento *</FormLabel>
-                  <FormControl><Input placeholder="Ej. Arroz Blanco" {...field} className="bg-white h-11 border-slate-200 focus:ring-success" /></FormControl>
+                  <FormLabel className="text-slate-600 font-semibold uppercase text-xs tracking-wider">Producto del Catálogo *</FormLabel>
+                  <FormControl>
+                    <Combobox
+                      options={masterProducts.map(p => ({ label: p.nombre, value: p.id }))}
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      placeholder="Seleccione el producto..."
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -82,26 +80,8 @@ export function ProductForm({ initialData, providers, foodGroups, onSubmit, isSu
               name="descripcionMarca"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-600 font-semibold uppercase text-xs tracking-wider">Descripción y Marca *</FormLabel>
-                  <FormControl><Input placeholder="Ej. Marca X, Grano Largo" {...field} className="bg-white h-11 border-slate-200 focus:ring-success" /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="foodGroupId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-slate-600 font-semibold uppercase text-xs tracking-wider">Grupo Alimentos (Res 719) *</FormLabel>
-                  <FormControl>
-                    <Combobox
-                      options={foodGroups.map(g => ({ label: g.name, value: g.id }))}
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      placeholder="Seleccione el grupo..."
-                    />
-                  </FormControl>
+                  <FormLabel className="text-slate-600 font-semibold uppercase text-xs tracking-wider">Descripción y Marca Específica *</FormLabel>
+                  <FormControl><Input placeholder="Ej. Grano Largo, Marca Diana" {...field} className="bg-white h-11 border-slate-200 focus:ring-success" /></FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -151,28 +131,27 @@ export function ProductForm({ initialData, providers, foodGroups, onSubmit, isSu
           {/* Columna 3: Unidades y Stock */}
           <div className="space-y-6">
             <div className="flex items-center gap-3 pb-3 border-b border-slate-200">
-              <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                <Database className="h-5 w-5" />
+              <div className="p-2 bg-amber-50 rounded-lg text-amber-600">
+                <PackageSearch className="h-5 w-5" />
               </div>
-              <h3 className="font-bold text-lg text-slate-800">Unidades de Medida</h3>
+              <h3 className="font-bold text-lg text-slate-800">Inventario</h3>
             </div>
 
             <FormField
               control={form.control}
-              name="unidadMedida"
+              name="currentStock"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-slate-600 font-semibold uppercase text-xs tracking-wider">Unidad de Medida Base *</FormLabel>
+                  <FormLabel className="text-slate-600 font-semibold uppercase text-xs tracking-wider">Stock Actual</FormLabel>
                   <FormControl>
-                    <Combobox
-                      options={[
-                        { label: "Kilogramos", value: "Kilogramos" },
-                        { label: "Litros", value: "Litros" },
-                        { label: "Unidades (Huevos)", value: "Unidades" },
-                      ]}
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      placeholder="Seleccione unidad..."
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.value === "" ? 0 : parseFloat(e.target.value))}
+                      className="bg-white h-11 border-slate-200 focus:ring-success"
                     />
                   </FormControl>
                   <FormMessage />
@@ -180,14 +159,27 @@ export function ProductForm({ initialData, providers, foodGroups, onSubmit, isSu
               )}
             />
 
-            <div className="mt-8 p-6 rounded-xl bg-slate-50 border border-slate-200 border-dashed">
-              <div className="flex items-start gap-3">
-                <Info className="h-5 w-5 text-primary mt-0.5 shrink-0" />
-                <p className="text-sm text-muted-foreground">
-                  La unidad de medida seleccionada determinará cómo se realiza la explosión de materiales en los pedidos y el reporte de compras.
-                </p>
-              </div>
-            </div>
+            {form.watch("masterProductId") && (() => {
+              const master = masterProducts.find(p => p.id === form.watch("masterProductId"));
+              return (
+                <div className="p-5 rounded-xl bg-slate-50 border border-slate-200 border-dashed space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Info className="h-4 w-4 text-primary shrink-0" />
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Info del Catálogo</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <span className="text-xs text-slate-400">Unidad de Medida</span>
+                      <p className="text-sm font-bold text-primary">{master?.unidadMedida}</p>
+                    </div>
+                    <div>
+                      <span className="text-xs text-slate-400">Grupo de Alimentos</span>
+                      <p className="text-sm font-bold text-slate-700">{master?.foodGroup?.name || "No definido"}</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </div>
 

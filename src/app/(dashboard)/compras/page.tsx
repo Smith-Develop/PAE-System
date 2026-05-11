@@ -9,6 +9,7 @@ export default async function ComprasPage() {
         product: {
           include: {
             provider: true,
+            masterProduct: true,
           }
         },
         operator: true,
@@ -18,8 +19,11 @@ export default async function ComprasPage() {
     prisma.product.findMany({
       include: {
         provider: true,
+        masterProduct: true,
       },
-      orderBy: { alimento: "asc" },
+      orderBy: { 
+        masterProduct: { nombre: "asc" } 
+      },
     }),
     prisma.operator.findMany({
       orderBy: { nombreOperador: "asc" },

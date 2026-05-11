@@ -6,9 +6,13 @@ export default async function BodegaPage() {
   const products = await prisma.product.findMany({
     include: {
       provider: true,
-      foodGroup: true,
+      masterProduct: {
+        include: { foodGroup: true }
+      },
     },
-    orderBy: { alimento: "asc" },
+    orderBy: { 
+      masterProduct: { nombre: "asc" } 
+    },
   });
 
   return (

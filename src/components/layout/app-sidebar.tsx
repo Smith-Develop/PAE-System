@@ -12,7 +12,9 @@ import {
   LogOut,
   Truck,
   Warehouse,
-  Building
+  Building,
+  Layers,
+  Users
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
@@ -31,8 +33,10 @@ import {
 
 const NAV_ITEMS = [
   { name: "Operadores", href: "/operadores", icon: Building },
+  { name: "Clientes", href: "/clientes", icon: Users },
   { name: "Proveedores", href: "/proveedores", icon: Truck },
   { name: "Maestro de Productos", href: "/maestro", icon: Package },
+  { name: "Grupos Alimentarios", href: "/grupos", icon: Layers },
   { name: "Recetario", href: "/recetas", icon: ChefHat },
   { name: "Bodega / Inventario", href: "/bodega", icon: Warehouse },
   { name: "Pedidos", href: "/pedidos", icon: Calculator },

@@ -40,10 +40,11 @@ export interface SelectedMenu {
 }
 
 export interface PackingItem {
-  productId: string;
+  masterProductId: string;
   productName: string;
   unit: string;
-  totalQuantity: number; // Ya convertido a la unidad base
+  totalQuantity: number;
+  selectedProductId?: string; // ID de la variante de proveedor elegida
 }
 
 // --- Reporte Gobernación ---
@@ -108,6 +109,19 @@ export interface Operator {
   updatedAt?: Date;
 }
 
+export interface Client {
+  id: string;
+  nombre: string;
+  nit: string;
+  direccion?: string;
+  municipio?: string;
+  contacto?: string;
+  telefono?: string;
+  correo?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
 export interface Provider {
   id: string;
   razonSocial: string;
@@ -127,6 +141,17 @@ export interface Provider {
   updatedAt?: Date;
 }
 
+export interface MasterProduct {
+  id: string;
+  nombre: string;
+  unidadMedida: string;
+  foodGroupId: string;
+  foodGroup?: FoodGroup;
+  providerProducts?: Product[];
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
 export interface FoodGroup {
   id: string;
   name: string;
@@ -134,14 +159,12 @@ export interface FoodGroup {
 
 export interface Product {
   id: string;
+  masterProductId: string;
+  masterProduct?: MasterProduct;
   providerId: string;
   provider?: Provider;
-  foodGroupId: string;
-  foodGroup?: FoodGroup;
-  alimento: string;
   descripcionMarca: string;
   registroSanitario?: string;
-  unidadMedida: string;
   currentStock: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -153,8 +176,8 @@ export interface RecipeIngredient {
   preparacion: string;
   cantidadBrutaUnitaria: number;
   recipeId: string;
-  productId: string;
-  product?: Product;
+  masterProductId: string;
+  masterProduct?: MasterProduct;
 }
 
 export interface Recipe {
@@ -190,6 +213,8 @@ export interface Order {
   id: string;
   fecha: Date | string;
   nota?: string | null;
+  clientId?: string | null;
+  client?: Client | null;
   operatorId?: string | null;
   operator?: Operator | null;
   items: OrderItem[];

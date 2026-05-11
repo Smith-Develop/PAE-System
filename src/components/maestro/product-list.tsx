@@ -26,15 +26,16 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ProductForm } from "./product-form";
 import { ProductFormData } from "@/lib/validations";
-import { Product, Provider, FoodGroup } from "@/types";
+import { MasterProduct, Product, Provider, FoodGroup } from "@/types";
 
 interface ProductListProps {
   products: Product[];
+  masterProducts: MasterProduct[];
   providers: Provider[];
   foodGroups: FoodGroup[];
 }
 
-export function ProductList({ products, providers, foodGroups }: ProductListProps) {
+export function ProductList({ products, masterProducts, providers, foodGroups }: ProductListProps) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -43,7 +44,8 @@ export function ProductList({ products, providers, foodGroups }: ProductListProp
 
   const filteredProducts = products.filter(
     (p) =>
-      p.alimento.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.masterProduct?.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.descripcionMarca.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.provider?.razonSocial.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.provider?.nit.includes(searchTerm)
   );
@@ -127,6 +129,7 @@ export function ProductList({ products, providers, foodGroups }: ProductListProp
               <ProductForm 
                 initialData={editingProduct} 
                 providers={providers}
+                masterProducts={masterProducts}
                 foodGroups={foodGroups}
                 onSubmit={onSubmit} 
                 isSubmitting={isSubmitting} 
@@ -141,7 +144,7 @@ export function ProductList({ products, providers, foodGroups }: ProductListProp
           <Table className="min-w-[1200px]">
             <TableHeader className="bg-slate-50/80">
               <TableRow className="hover:bg-transparent">
-                <TableHead className="w-[300px] font-bold text-primary py-4">Producto / Alimento</TableHead>
+                <TableHead className="w-[300px] font-bold text-primary py-4">Producto / Marca</TableHead>
                 <TableHead className="font-bold text-primary py-4">Grupo Alimentos</TableHead>
                 <TableHead className="font-bold text-primary py-4">Proveedor</TableHead>
                 <TableHead className="font-bold text-primary py-4">Reg. Sanitario</TableHead>
@@ -164,12 +167,11 @@ export function ProductList({ products, providers, foodGroups }: ProductListProp
                 filteredProducts.map((p) => (
                   <TableRow key={p.id} className="hover:bg-slate-50/80 transition-colors">
                     <TableCell>
-                      <div className="font-bold text-slate-800">{p.alimento}</div>
-                      <div className="text-xs text-muted-foreground italic">{p.descripcionMarca}</div>
+                      <div className="font-bold text-slate-800">{p.descripcionMarca}</div>
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary" className="font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">
-                        {p.foodGroup?.name}
+                        {p.masterProduct?.foodGroup?.name}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -190,7 +192,7 @@ export function ProductList({ products, providers, foodGroups }: ProductListProp
                           {p.currentStock.toLocaleString("es-CO", { minimumFractionDigits: 1 })}
                         </span>
                         <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                          {p.unidadMedida}
+                          {p.masterProduct?.unidadMedida}
                         </span>
                       </div>
                     </TableCell>

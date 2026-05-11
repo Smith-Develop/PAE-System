@@ -40,18 +40,20 @@ export function Combobox({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className={cn("w-full justify-between bg-white h-11 border-slate-200 font-normal", className)}
-        >
-          {value
-            ? options.find((option) => option.value === value)?.label
-            : <span className="text-muted-foreground">{placeholder}</span>}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
+      <PopoverTrigger
+        render={
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className={cn("w-full justify-between bg-white h-11 border-slate-200 font-normal", className)}
+          />
+        }
+      >
+        {value
+          ? options.find((option) => option.value === value)?.label
+          : <span className="text-muted-foreground">{placeholder}</span>}
+        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
         <Command>

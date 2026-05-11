@@ -8,7 +8,7 @@ export async function GET() {
       include: {
         ingredients: {
           include: {
-            product: true,
+            masterProduct: true,
           },
         },
       },
@@ -40,11 +40,11 @@ export async function POST(request: Request) {
         nombre: result.data.nombre,
         descripcion: result.data.descripcion,
         ingredients: {
-          create: result.data.ingredients.map((ing) => ({
+          create: result.data.ingredients.map((ing: any) => ({
             componente: ing.componente,
             preparacion: ing.preparacion,
             cantidadBrutaUnitaria: ing.cantidadBrutaUnitaria,
-            productId: ing.productId,
+            masterProductId: ing.masterProductId,
           })),
         },
       },
@@ -55,6 +55,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(recipe, { status: 201 });
   } catch (error) {
+    console.error(error);
     return NextResponse.json(
       { error: "Error al crear la receta" },
       { status: 500 }

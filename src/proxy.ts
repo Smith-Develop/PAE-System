@@ -3,14 +3,21 @@ import { auth } from "@/lib/auth";
 
 export async function proxy(request: NextRequest) {
   const session = await auth();
+  const { pathname } = request.nextUrl;
 
-  // Redirigir a login si no hay sesión y la ruta no es /login
-  if (!session && request.nextUrl.pathname !== "/login") {
+  // Rutas públicas (sin autenticación)
+  const publicPaths = ["/login", "/api/auth"];
+  const isPublic = publicPaths.some((p) => pathname.startsWith(p));
+  const isApiRoute = pathname.startsWith("/api");
+
+  if (!session && !isPublic) {
+    if (isApiRoute) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // Redirigir a /maestro si hay sesión y trata de entrar a /login o a /
-  if (session && (request.nextUrl.pathname === "/login" || request.nextUrl.pathname === "/")) {
+  if (session && (pathname === "/login" || pathname === "/")) {
     return NextResponse.redirect(new URL("/maestro", request.url));
   }
 
@@ -18,5 +25,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };

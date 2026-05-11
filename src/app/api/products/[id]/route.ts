@@ -39,15 +39,16 @@ export async function DELETE(
   try {
     const { id } = await params;
     
-    // Verificar si hay dependencias (ej: si está en alguna receta o compra)
-    const [recipeCount, purchaseCount] = await Promise.all([
-      prisma.recipeIngredient.count({ where: { productId: id } }),
-      prisma.purchase.count({ where: { productId: id } })
+    // Verificar si hay dependencias
+    const [purchaseCount, orderMaterialCount, stockTxCount] = await Promise.all([
+      prisma.purchase.count({ where: { productId: id } }),
+      prisma.orderMaterial.count({ where: { productId: id } }),
+      prisma.stockTransaction.count({ where: { productId: id } }),
     ]);
 
-    if (recipeCount > 0 || purchaseCount > 0) {
+    if (purchaseCount > 0 || orderMaterialCount > 0 || stockTxCount > 0) {
       return NextResponse.json(
-        { error: "No se puede eliminar el producto porque está siendo usado en recetas o compras." },
+        { error: "No se puede eliminar el producto porque está siendo usado en compras o pedidos." },
         { status: 400 }
       );
     }

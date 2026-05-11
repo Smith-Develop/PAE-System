@@ -183,7 +183,7 @@ export function ProductsByGroup({ masterProducts, foodGroups }: ProductsByGroupP
           </div>
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
-            <Select value={filterGroupId} onValueChange={setFilterGroupId}>
+            <Select value={filterGroupId} onValueChange={(val) => setFilterGroupId(val || "all")}>
               <SelectTrigger className="h-9 w-[200px] bg-white">
                 <SelectValue placeholder="Filtrar por grupo" />
               </SelectTrigger>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";
-import { Plus, Trash2, Printer, Save, Eye, History, ChevronDown } from "lucide-react";
+import { Plus, Trash2, Printer, Save, Eye, History } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -291,6 +291,27 @@ export function OrderCalculator({
     setIsOrderModalOpen(true);
   };
 
+  const handleDeleteOrder = async (orderId: string) => {
+    if (
+      !confirm(
+        "¿Estás seguro de eliminar este pedido? Se restaurará el stock de los productos despachados."
+      )
+    )
+      return;
+
+    try {
+      const res = await fetch(`/api/orders/${orderId}`, { method: "DELETE" });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Error al eliminar");
+      }
+      toast.success("Pedido eliminado y stock restaurado");
+      fetchOrders();
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Error desconocido");
+    }
+  };
+
   return (
     <div className="flex flex-col gap-6 h-full overflow-hidden">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 shrink-0">
@@ -561,7 +582,7 @@ export function OrderCalculator({
                                 );
                                 if (found) {
                                   sources.push(
-                                  `${dish.componente}: ${dish.nombre}`
+                                  `${dish.componente?.name || "?"}: ${dish.nombre}`
                                 );
                                 }
                               }
@@ -595,7 +616,7 @@ export function OrderCalculator({
                             onValueChange={(val) =>
                               setSelectedVariants((prev) => ({
                                 ...prev,
-                                [item.masterProductId]: val,
+                                [item.masterProductId]: val || "",
                               }))
                             }
                           >
@@ -709,6 +730,9 @@ export function OrderCalculator({
                     <TableHead className="font-semibold text-slate-700 text-center">
                       Ver
                     </TableHead>
+                    <TableHead className="font-semibold text-slate-700 text-center">
+                      Eliminar
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -758,6 +782,19 @@ export function OrderCalculator({
                           }}
                         >
                           <Eye className="h-4 w-4 text-primary" />
+                        </Button>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 hover:bg-destructive/10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteOrder(order.id);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </TableCell>
                     </TableRow>

@@ -6,9 +6,11 @@ export async function GET() {
     const products = await prisma.product.findMany({
       include: {
         provider: true,
-        foodGroup: true,
+        masterProduct: {
+          include: { foodGroup: true },
+        },
       },
-      orderBy: { alimento: "asc" },
+      orderBy: { masterProduct: { nombre: "asc" } },
     });
     return NextResponse.json(products);
   } catch (error) {
@@ -19,7 +21,6 @@ export async function GET() {
   }
 }
 
-// Ruta para obtener el historial de un producto específico
 export async function POST(request: Request) {
   try {
     const { productId } = await request.json();

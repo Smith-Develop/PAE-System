@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { ReportTable } from "@/components/reporte/report-table";
+import { REPORT_COLUMNS } from "@/types";
 import { FileSpreadsheet } from "lucide-react";
+
+type ReportRow = Record<(typeof REPORT_COLUMNS)[number], string | number | boolean | null>;
 
 export default async function ReportePage({
   searchParams,
@@ -54,7 +57,7 @@ export default async function ReportePage({
   ]);
 
   // Aplanar: cada OrderMaterial → una fila del reporte
-  const reportData: Record<string, any>[] = [];
+  const reportData: ReportRow[] = [];
 
   for (const order of orders) {
     const operator = order.operator || {

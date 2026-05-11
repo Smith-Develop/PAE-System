@@ -5,7 +5,6 @@ export async function proxy(request: NextRequest) {
   const session = await auth();
   const { pathname } = request.nextUrl;
 
-  // Rutas públicas (sin autenticación)
   const publicPaths = ["/login", "/api/auth"];
   const isPublic = publicPaths.some((p) => pathname.startsWith(p));
   const isApiRoute = pathname.startsWith("/api");

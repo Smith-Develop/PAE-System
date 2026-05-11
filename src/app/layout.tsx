@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Inter, Fira_Code } from "next/font/google";
 import { Toaster } from "sonner";
+import { ensureDb } from "@/lib/db-init";
 import "./globals.css";
 
 const fontHeading = Plus_Jakarta_Sans({
@@ -23,11 +24,14 @@ export const metadata: Metadata = {
   description: "Sistema de gestión del Programa de Alimentación Escolar (PAE)",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Inicializar base de datos en despliegue serverless (Vercel)
+  await ensureDb();
+
   return (
     <html
       lang="es"

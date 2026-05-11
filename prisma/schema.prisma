@@ -1,0 +1,212 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// AUTENTICACIÓN Y ROLES
+// ============================================
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String   // hash bcryptjs
+  roleId    String
+  role      Role     @relation(fields: [roleId], references: [id])
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  permissions String   // JSON string con permisos por módulo
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ============================================
+// CONFIGURACIÓN DEL OPERADOR
+// ============================================
+model Operator {
+  id                String   @id @default(cuid())
+  nombreOperador    String   @default("")
+  nitOperador       String   @unique
+  modeloAtencion    String   @default("")
+  modalidadAtencion String   @default("")
+  direccionBodega   String   @default("")
+  municipioBodega   String   @default("")
+  contactoBodega    String   @default("")
+  telefonoBodega    String   @default("")
+  orders            Order[]
+  purchases         Purchase[]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// ============================================
+// MÓDULO 1: MAESTRO DE PROVEEDORES Y PRODUCTOS
+// ============================================
+
+model Provider {
+  id                       String  @id @default(cuid())
+  razonSocial              String
+  nit                      String  @unique
+  codigoInscripcion        String  @default("")
+  representanteLegal       String
+  municipio                String
+  direccionEstablecimiento String  @default("")
+  telefono                 String  @default("")
+  correo                   String  @default("")
+  tipoActividad            String
+  compraLocal              Boolean @default(false)
+
+  // Datos sanitarios del establecimiento
+  fechaVisita              String  @default("")
+  conceptoSanitario        String  @default("")
+  entidadEmisora           String  @default("")
+
+  products                 Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FoodGroup {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  products  Product[]
+  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Product {
+  id                String  @id @default(cuid())
+  
+  // Relaciones
+  providerId        String
+  provider          Provider @relation(fields: [providerId], references: [id])
+  
+  foodGroupId       String
+  foodGroup         FoodGroup @relation(fields: [foodGroupId], references: [id])
+
+  // Datos del Producto (Res. 719)
+  alimento          String
+  descripcionMarca  String
+  registroSanitario String  @default("")
+  unidadMedida      String  // Kilogramos, Litros, Paquete, Unidad, etc.
+
+  // Inventario
+  currentStock      Float   @default(0)
+
+  ingredients       RecipeIngredient[]
+  purchases         Purchase[]
+  stockTransactions StockTransaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model StockTransaction {
+  id          String   @id @default(cuid())
+  type        String   // "ENTRADA" (Compra), "SALIDA" (Pedido/Despacho), "AJUSTE"
+  quantity    Float
+  reason      String?  // Ej: "Compra Factura #123", "Pedido #456"
+  
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+
+  createdAt   DateTime @default(now())
+
+  @@index([productId])
+}
+
+// ============================================
+// MÓDULO 2: RECETARIO
+// ============================================
+model Recipe {
+  id          String             @id @default(cuid())
+  nombre      String
+  descripcion String?
+  ingredients RecipeIngredient[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+}
+
+model RecipeIngredient {
+  id                    String   @id @default(cuid())
+  componente            String   // Proteína, Cereal, Fruta, etc.
+  preparacion           String   // Arroz con pollo, Ensalada, etc.
+  cantidadBrutaUnitaria Float    // En gramos o mililitros (por 1 ración)
+
+  recipeId  String
+  recipe    Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([recipeId])
+  @@index([productId])
+}
+
+// ============================================
+// MÓDULO 3: PEDIDOS (Explosión de Materiales)
+// ============================================
+model Order {
+  id          String      @id @default(cuid())
+  fecha       DateTime    @default(now())
+  nota        String?
+  
+  operatorId  String?
+  operator    Operator?   @relation(fields: [operatorId], references: [id])
+
+  items       OrderItem[]
+
+  createdAt DateTime @default(now())
+}
+
+model OrderItem {
+  id       String @id @default(cuid())
+  raciones Int
+
+  orderId  String
+  order    Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  recipeId String
+
+  @@index([orderId])
+}
+
+// ============================================
+// MÓDULO 4: REGISTRO DE COMPRAS
+// ============================================
+model Purchase {
+  id               String   @id @default(cuid())
+  fechaCompra      DateTime // Fecha exacta de la factura
+  cantidadComprada Float    // En la unidad del producto
+  valorTotal       Float    // Valor en pesos colombianos
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  operatorId String?
+  operator   Operator? @relation(fields: [operatorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+  @@index([operatorId])
+  @@index([fechaCompra])
+}

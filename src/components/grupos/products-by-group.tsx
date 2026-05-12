@@ -39,6 +39,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Pagination } from "@/components/ui/pagination";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { masterProductSchema, MasterProductFormData } from "@/lib/validations";
@@ -68,6 +69,8 @@ export function ProductsByGroup({ masterProducts, foodGroups }: ProductsByGroupP
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingProduct, setEditingProduct] = useState<MasterProductWithGroup | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
   const form = useForm<MasterProductFormData>({
     resolver: zodResolver(masterProductSchema) as any,
@@ -93,6 +96,9 @@ export function ProductsByGroup({ masterProducts, foodGroups }: ProductsByGroupP
     }
     return filtered;
   }, [masterProducts, filterGroupId, searchTerm]);
+
+  const totalPages = Math.ceil(filteredProducts.length / pageSize);
+  const paginatedProducts = filteredProducts.slice((page - 1) * pageSize, page * pageSize);
 
   const onSubmit = async (data: MasterProductFormData) => {
     setIsSubmitting(true);
@@ -329,7 +335,7 @@ export function ProductsByGroup({ masterProducts, foodGroups }: ProductsByGroupP
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredProducts.map((p) => (
+                paginatedProducts.map((p) => (
                   <TableRow key={p.id} className="hover:bg-slate-50/50 transition-colors">
                     <TableCell className="py-3">
                       <span
@@ -382,6 +388,8 @@ export function ProductsByGroup({ masterProducts, foodGroups }: ProductsByGroupP
           </Table>
         </div>
       </div>
+
+      <Pagination currentPage={page} totalPages={totalPages} totalItems={filteredProducts.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
 
       <div className="text-xs text-muted-foreground text-right">
         {filteredProducts.length} producto{filteredProducts.length !== 1 ? "s" : ""}

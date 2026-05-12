@@ -38,6 +38,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Pagination } from "@/components/ui/pagination";
 
 import {
   SelectedMenu,
@@ -97,6 +98,8 @@ export function OrderCalculator({
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<OrderRecord | null>(null);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [ordersPage, setOrdersPage] = useState(1);
+  const [ordersPageSize, setOrdersPageSize] = useState(20);
 
   const fetchOrders = useCallback(async () => {
     setIsLoadingOrders(true);
@@ -116,6 +119,9 @@ export function OrderCalculator({
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
+
+  const totalOrderPages = Math.ceil(orders.length / ordersPageSize);
+  const paginatedOrders = orders.slice((ordersPage - 1) * ordersPageSize, ordersPage * ordersPageSize);
 
   const selectedOperator = useMemo(
     () => operators.find((op) => op.id === selectedOperatorId),
@@ -736,7 +742,7 @@ export function OrderCalculator({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {orders.map((order) => (
+                  {paginatedOrders.map((order) => (
                     <TableRow
                       key={order.id}
                       className="hover:bg-slate-50 cursor-pointer"
@@ -803,7 +809,9 @@ export function OrderCalculator({
               </Table>
             )}
           </CardContent>
-        </Card>
+          </Card>
+
+          <Pagination currentPage={ordersPage} totalPages={totalOrderPages} totalItems={orders.length} pageSize={ordersPageSize} onPageChange={setOrdersPage} onPageSizeChange={(s) => { setOrdersPageSize(s); setOrdersPage(1); }} />
       </div>
 
       {/* MODAL RESUMEN DEL PEDIDO */}

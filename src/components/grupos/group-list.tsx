@@ -23,6 +23,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Pagination } from "@/components/ui/pagination";
 import { GroupForm } from "./group-form";
 
 interface FoodGroup {
@@ -41,12 +42,17 @@ export function GroupList({ initialGroups }: GroupListProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState<FoodGroup | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
   const filteredGroups = initialGroups.filter(
     (g) =>
       g.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (g.description || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const totalPages = Math.ceil(filteredGroups.length / pageSize);
+  const paginatedGroups = filteredGroups.slice((page - 1) * pageSize, page * pageSize);
 
   const handleDelete = async (id: string) => {
     if (!confirm("¿Estás seguro de eliminar este grupo?")) return;
@@ -125,7 +131,7 @@ export function GroupList({ initialGroups }: GroupListProps) {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredGroups.map((g) => (
+              paginatedGroups.map((g) => (
                 <TableRow key={g.id} className="hover:bg-slate-50/50 transition-colors">
                   <TableCell className="align-top py-4">
                     <span
@@ -180,6 +186,8 @@ export function GroupList({ initialGroups }: GroupListProps) {
           </TableBody>
         </Table>
       </div>
+
+      <Pagination currentPage={page} totalPages={totalPages} totalItems={filteredGroups.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
     </div>
   );
 }

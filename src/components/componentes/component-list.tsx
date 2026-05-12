@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Pagination } from "@/components/ui/pagination";
 import {
   Table,
   TableBody,
@@ -57,6 +58,8 @@ export function ComponentList({ components }: ComponentListProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingComponent, setEditingComponent] =
     useState<ComponentWithCount | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
   const form = useForm<ComponentFormData>({
     resolver: zodResolver(componentSchema),
@@ -129,6 +132,9 @@ export function ComponentList({ components }: ComponentListProps) {
       form.reset({ name: "" });
     }
   };
+
+  const totalPages = Math.ceil(components.length / pageSize);
+  const paginatedComponents = components.slice((page - 1) * pageSize, page * pageSize);
 
   return (
     <div className="space-y-4">
@@ -229,7 +235,7 @@ export function ComponentList({ components }: ComponentListProps) {
                 </TableCell>
               </TableRow>
             ) : (
-              components.map((c) => (
+              paginatedComponents.map((c) => (
                 <TableRow
                   key={c.id}
                   className="hover:bg-slate-50/80 transition-colors"
@@ -270,6 +276,7 @@ export function ComponentList({ components }: ComponentListProps) {
           </TableBody>
         </Table>
       </div>
+      <Pagination currentPage={page} totalPages={totalPages} totalItems={components.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
     </div>
   );
 }

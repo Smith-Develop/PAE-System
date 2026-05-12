@@ -23,6 +23,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Pagination } from "@/components/ui/pagination";
 import { DishForm } from "./dish-form";
 import { DishFormData } from "@/lib/validations";
 import { Dish, MasterProduct, Component } from "@/types";
@@ -41,12 +42,17 @@ export function DishList({ dishes, masterProducts, components }: DishListProps) 
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingDish, setEditingDish] = useState<Dish | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
   const filteredDishes = dishes.filter(
     (d) =>
       d.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (d.componente?.name || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const totalPages = Math.ceil(filteredDishes.length / pageSize);
+  const paginatedDishes = filteredDishes.slice((page - 1) * pageSize, page * pageSize);
 
   const onSubmit = async (data: DishFormData) => {
     setIsSubmitting(true);
@@ -171,7 +177,7 @@ export function DishList({ dishes, masterProducts, components }: DishListProps) 
                 </TableCell>
               </TableRow>
             ) : (
-              filteredDishes.map((d) => (
+              paginatedDishes.map((d) => (
                 <TableRow
                   key={d.id}
                   className="hover:bg-slate-50/80 transition-colors"
@@ -243,6 +249,8 @@ export function DishList({ dishes, masterProducts, components }: DishListProps) 
           </TableBody>
         </Table>
       </div>
+
+      <Pagination currentPage={page} totalPages={totalPages} totalItems={filteredDishes.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
     </div>
   );
 }

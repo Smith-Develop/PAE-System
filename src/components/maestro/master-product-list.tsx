@@ -23,6 +23,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Pagination } from "@/components/ui/pagination";
 import { MasterProductForm } from "./master-product-form";
 import { MasterProductFormData } from "@/lib/validations";
 import { MasterProduct, FoodGroup } from "@/types";
@@ -43,6 +44,8 @@ export function MasterProductList({
   const [editingProduct, setEditingProduct] = useState<MasterProduct | null>(
     null
   );
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
   const filteredProducts = masterProducts.filter(
     (p) =>
@@ -50,6 +53,9 @@ export function MasterProductList({
       p.unidadMedida.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.foodGroup?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const totalPages = Math.ceil(filteredProducts.length / pageSize);
+  const paginatedProducts = filteredProducts.slice((page - 1) * pageSize, page * pageSize);
 
   const onSubmit = async (data: MasterProductFormData) => {
     setIsSubmitting(true);
@@ -186,7 +192,7 @@ export function MasterProductList({
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredProducts.map((p) => (
+                paginatedProducts.map((p) => (
                   <TableRow
                     key={p.id}
                     className="hover:bg-slate-50/80 transition-colors"
@@ -236,6 +242,8 @@ export function MasterProductList({
           </Table>
         </div>
       </div>
+
+      <Pagination currentPage={page} totalPages={totalPages} totalItems={filteredProducts.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
     </div>
   );
 }

@@ -24,6 +24,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Pagination } from "@/components/ui/pagination";
 import { ProductForm } from "./product-form";
 import { ProductFormData } from "@/lib/validations";
 import { MasterProduct, Product, Provider, FoodGroup } from "@/types";
@@ -41,6 +42,8 @@ export function ProductList({ products, masterProducts, providers, foodGroups }:
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
   const filteredProducts = products.filter(
     (p) =>
@@ -49,6 +52,9 @@ export function ProductList({ products, masterProducts, providers, foodGroups }:
       p.provider?.razonSocial.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.provider?.nit.includes(searchTerm)
   );
+
+  const totalPages = Math.ceil(filteredProducts.length / pageSize);
+  const paginatedProducts = filteredProducts.slice((page - 1) * pageSize, page * pageSize);
 
   const onSubmit = async (data: ProductFormData) => {
     setIsSubmitting(true);
@@ -164,7 +170,7 @@ export function ProductList({ products, masterProducts, providers, foodGroups }:
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredProducts.map((p) => (
+                paginatedProducts.map((p) => (
                   <TableRow key={p.id} className="hover:bg-slate-50/80 transition-colors">
                     <TableCell>
                       <div className="font-bold text-slate-800">{p.descripcionMarca}</div>
@@ -213,6 +219,8 @@ export function ProductList({ products, masterProducts, providers, foodGroups }:
           </Table>
         </div>
       </div>
+
+      <Pagination currentPage={page} totalPages={totalPages} totalItems={filteredProducts.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
     </div>
   );
 }

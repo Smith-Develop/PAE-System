@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Pagination } from "@/components/ui/pagination";
 import {
   Table,
   TableBody,
@@ -37,12 +38,16 @@ export function ProviderList({ providers }: ProviderListProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingProvider, setEditingProvider] = useState<Provider | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
   const filteredProviders = providers.filter(
     (p) =>
       p.razonSocial.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.nit.includes(searchTerm)
   );
+  const totalPages = Math.ceil(filteredProviders.length / pageSize);
+  const paginatedProviders = filteredProviders.slice((page - 1) * pageSize, page * pageSize);
 
   const onSubmit = async (data: ProviderFormData) => {
     setIsSubmitting(true);
@@ -150,7 +155,7 @@ export function ProviderList({ providers }: ProviderListProps) {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredProviders.map((p) => (
+              paginatedProviders.map((p) => (
                 <TableRow key={p.id}>
                   <TableCell className="font-medium">{p.razonSocial}</TableCell>
                   <TableCell className="font-mono text-sm">{p.nit}</TableCell>
@@ -182,6 +187,7 @@ export function ProviderList({ providers }: ProviderListProps) {
           </TableBody>
         </Table>
       </div>
+      <Pagination currentPage={page} totalPages={totalPages} totalItems={filteredProviders.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
     </div>
   );
 }

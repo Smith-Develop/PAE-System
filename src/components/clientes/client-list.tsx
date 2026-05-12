@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Pagination } from "@/components/ui/pagination";
 import {
   Table,
   TableBody,
@@ -36,6 +37,8 @@ export function ClientList({ clients }: ClientListProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
   const filteredClients = clients.filter(
     (c) =>
@@ -43,6 +46,8 @@ export function ClientList({ clients }: ClientListProps) {
       c.nit.includes(searchTerm) ||
       (c.municipio || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
+  const totalPages = Math.ceil(filteredClients.length / pageSize);
+  const paginatedClients = filteredClients.slice((page - 1) * pageSize, page * pageSize);
 
   const onSubmit = async (data: ClientFormData) => {
     setIsSubmitting(true);
@@ -169,7 +174,7 @@ export function ClientList({ clients }: ClientListProps) {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredClients.map((c) => (
+              paginatedClients.map((c) => (
                 <TableRow
                   key={c.id}
                   className="hover:bg-slate-50/80 transition-colors"
@@ -230,6 +235,7 @@ export function ClientList({ clients }: ClientListProps) {
           </TableBody>
         </Table>
       </div>
+      <Pagination currentPage={page} totalPages={totalPages} totalItems={filteredClients.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
     </div>
   );
 }

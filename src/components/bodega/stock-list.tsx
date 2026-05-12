@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Pagination } from "@/components/ui/pagination";
 import {
   Dialog,
   DialogContent,
@@ -30,12 +31,17 @@ export function StockList({ initialProducts }: StockListProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
   const filteredProducts = initialProducts.filter((p) =>
     p.masterProduct?.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.descripcionMarca.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.provider?.razonSocial.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const totalPages = Math.ceil(filteredProducts.length / pageSize);
+  const paginatedProducts = filteredProducts.slice((page - 1) * pageSize, page * pageSize);
 
   const openHistory = (product: Product) => {
     setSelectedProduct(product);
@@ -76,7 +82,7 @@ export function StockList({ initialProducts }: StockListProps) {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredProducts.map((p) => (
+                paginatedProducts.map((p) => (
                   <TableRow key={p.id} className="hover:bg-slate-50/80 transition-colors">
                     <TableCell>
                       <div className="font-bold text-slate-800">{p.masterProduct?.nombre}</div>
@@ -115,6 +121,8 @@ export function StockList({ initialProducts }: StockListProps) {
           </Table>
         </div>
       </div>
+
+      <Pagination currentPage={page} totalPages={totalPages} totalItems={filteredProducts.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
 
       <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
         <DialogContent className="w-[95vw] max-w-none h-[90vh] overflow-y-auto p-0 flex flex-col">

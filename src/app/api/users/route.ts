@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hash } from "bcryptjs";
+import { logAction } from "@/lib/audit";
 
 export async function GET() {
   const session = await auth();
@@ -42,6 +43,16 @@ export async function POST(request: Request) {
   const user = await prisma.user.create({
     data: { name, email, password: hashed, roleId, active: true },
     select: { id: true, name: true, email: true, role: { select: { id: true, name: true } }, active: true },
+  });
+
+  await logAction({
+    userId: session.user.id!,
+    userEmail: session.user.email || "",
+    userName: session.user.name || "",
+    action: "CREATE",
+    entity: "user",
+    entityId: user.id,
+    details: JSON.stringify({ name: user.name, email: user.email }),
   });
 
   return NextResponse.json(user, { status: 201 });

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hash } from "bcryptjs";
+import { logAction } from "@/lib/audit";
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -27,6 +28,17 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       data,
       select: { id: true, name: true, email: true, role: { select: { id: true, name: true } }, active: true },
     });
+
+    await logAction({
+      userId: session.user.id!,
+      userEmail: session.user.email || "",
+      userName: session.user.name || "",
+      action: "UPDATE",
+      entity: "user",
+      entityId: id,
+      details: JSON.stringify({ changes: Object.keys(data) }),
+    });
+
     return NextResponse.json(user);
   } catch {
     return NextResponse.json({ error: "Error al actualizar" }, { status: 500 });
@@ -46,5 +58,15 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   }
 
   await prisma.user.delete({ where: { id } });
+
+  await logAction({
+    userId: session.user.id!,
+    userEmail: session.user.email || "",
+    userName: session.user.name || "",
+    action: "DELETE",
+    entity: "user",
+    entityId: id,
+  });
+
   return NextResponse.json({ message: "Eliminado" });
 }

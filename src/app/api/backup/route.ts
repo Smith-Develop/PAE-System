@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logAction } from "@/lib/audit";
 
 export async function GET() {
   const session = await auth();
@@ -31,6 +32,15 @@ export async function GET() {
     ];
 
     const results = await Promise.all(tables);
+
+    await logAction({
+      userId: session.user.id!,
+      userEmail: session.user.email || "",
+      userName: session.user.name || "",
+      action: "BACKUP",
+      entity: "backup",
+      details: JSON.stringify({ tables: 18 }),
+    });
 
     const backup = {
       exportedAt: new Date().toISOString(),
@@ -68,6 +78,15 @@ export async function POST(request: Request) {
     }
 
     const d = backup.data;
+
+    await logAction({
+      userId: session.user.id!,
+      userEmail: session.user.email || "",
+      userName: session.user.name || "",
+      action: "RESTORE",
+      entity: "backup",
+      details: JSON.stringify({ source: "archivo JSON" }),
+    });
 
     await prisma.$transaction(async (tx) => {
       await tx.stockTransaction.deleteMany();

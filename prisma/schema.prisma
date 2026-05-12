@@ -37,6 +37,26 @@ model Role {
 }
 
 // ============================================
+// LOGS DE AUDITORÍA
+// ============================================
+model Log {
+  id        String   @id @default(cuid())
+  userId    String
+  userEmail String
+  userName  String
+  action    String   // CREATE, UPDATE, DELETE, LOGIN, BACKUP, RESTORE, PASSWORD, MAINTENANCE
+  entity    String   // provider, product, dish, menu, order, user, etc.
+  entityId  String?  // ID del registro afectado
+  details   String?  // JSON con información adicional
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@index([entity])
+}
+
+// ============================================
 // CLIENTES (Instituciones Educativas / Dependencias)
 // ============================================
 model Client {

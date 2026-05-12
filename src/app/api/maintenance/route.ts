@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logAction } from "@/lib/audit";
 
 // Solo admin puede acceder
 export async function DELETE(request: Request) {
@@ -13,6 +14,15 @@ export async function DELETE(request: Request) {
   if (!entity) return NextResponse.json({ error: "Entidad requerida" }, { status: 400 });
 
   try {
+    await logAction({
+      userId: session.user.id!,
+      userEmail: session.user.email || "",
+      userName: session.user.name || "",
+      action: "MAINTENANCE",
+      entity: entity,
+      details: JSON.stringify({ action: "delete_all" }),
+    });
+
     switch (entity) {
       case "providers":
         await prisma.product.deleteMany();

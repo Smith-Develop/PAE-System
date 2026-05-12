@@ -6,6 +6,7 @@ import {
   User, Key, Save, Download, Upload, Database, AlertTriangle,
   Users, Plus, Edit, Trash2, Shield, Mail, Wrench, Package, Truck,
   Building, Layers, ChefHat, ClipboardList, Calculator, Receipt, Box,
+  ScrollText, Search, ChevronLeft, ChevronRight,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,12 @@ export function SettingsPanel({ user }: SettingsPanelProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   // Mantenimiento
   const [maintenanceLoading, setMaintenanceLoading] = useState<string | null>(null);
+  // Logs
+  const [logs, setLogs] = useState<any[]>([]);
+  const [logTotal, setLogTotal] = useState(0);
+  const [logPage, setLogPage] = useState(1);
+  const [logFilter, setLogFilter] = useState("");
+  const [loadingLogs, setLoadingLogs] = useState(false);
   // Usuarios
   const [userList, setUserList] = useState<UserData[]>([]);
   const [roles, setRoles] = useState<{ id: string; name: string }[]>([]);
@@ -70,6 +77,23 @@ export function SettingsPanel({ user }: SettingsPanelProps) {
   };
 
   useEffect(() => { fetchUsers(); }, []);
+
+  const fetchLogs = async (page = 1, filter = "") => {
+    if (user.role !== "ADMIN") return;
+    setLoadingLogs(true);
+    try {
+      const params = new URLSearchParams({ page: String(page), limit: "30" });
+      if (filter) params.set("action", filter);
+      const res = await fetch(`/api/logs?${params}`);
+      if (res.ok) {
+        const data = await res.json();
+        setLogs(data.logs);
+        setLogTotal(data.total);
+        setLogPage(page);
+      }
+    } catch { }
+    finally { setLoadingLogs(false); }
+  };
 
   // --- Perfil ---
   const handleUpdateProfile = async () => {
@@ -199,6 +223,9 @@ export function SettingsPanel({ user }: SettingsPanelProps) {
           <TabsTrigger value="backup"><Database className="h-4 w-4 mr-2" />Backup</TabsTrigger>
           {user.role === "ADMIN" && (
             <TabsTrigger value="maintenance"><Wrench className="h-4 w-4 mr-2" />Mantenimiento</TabsTrigger>
+          )}
+          {user.role === "ADMIN" && (
+            <TabsTrigger value="logs" onClick={() => fetchLogs(1, logFilter)}><ScrollText className="h-4 w-4 mr-2" />Logs</TabsTrigger>
           )}
         </TabsList>
 
@@ -376,6 +403,94 @@ export function SettingsPanel({ user }: SettingsPanelProps) {
                   </Button>
                 ))}
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        )}
+
+        {/* LOGS (solo admin) */}
+        {user.role === "ADMIN" && (
+        <TabsContent value="logs" className="space-y-4 mt-0">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle><ScrollText className="h-5 w-5 inline mr-2" />Registro de Actividad</CardTitle>
+                <CardDescription>Auditoría de acciones realizadas por los usuarios.</CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <select className="border rounded px-2 py-1 text-sm h-8" value={logFilter} onChange={(e) => { setLogFilter(e.target.value); fetchLogs(1, e.target.value); }}>
+                  <option value="">Todas las acciones</option>
+                  <option value="LOGIN">Login</option>
+                  <option value="CREATE">Creación</option>
+                  <option value="UPDATE">Actualización</option>
+                  <option value="DELETE">Eliminación</option>
+                  <option value="BACKUP">Backup</option>
+                  <option value="RESTORE">Restauración</option>
+                  <option value="MAINTENANCE">Mantenimiento</option>
+                </select>
+                <Button variant="ghost" size="sm" onClick={() => fetchLogs(logPage, logFilter)} disabled={loadingLogs}>Actualizar</Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {loadingLogs ? (
+                <p className="text-center py-8 text-muted-foreground">Cargando...</p>
+              ) : logs.length === 0 ? (
+                <p className="text-center py-8 text-muted-foreground">No hay registros de actividad.</p>
+              ) : (
+                <>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[160px]">Fecha</TableHead>
+                          <TableHead>Usuario</TableHead>
+                          <TableHead className="w-[90px]">Acción</TableHead>
+                          <TableHead>Entidad</TableHead>
+                          <TableHead className="hidden md:table-cell">Detalle</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {logs.map((log: any) => (
+                          <TableRow key={log.id}>
+                            <TableCell className="text-xs font-mono whitespace-nowrap">
+                              {new Date(log.createdAt).toLocaleString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-sm font-medium">{log.userName}</div>
+                              <div className="text-[10px] text-muted-foreground">{log.userEmail}</div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={
+                                log.action === "DELETE" ? "destructive" :
+                                log.action === "CREATE" ? "default" :
+                                log.action === "MAINTENANCE" ? "destructive" :
+                                "secondary"
+                              } className="text-[10px]">{log.action}</Badge>
+                            </TableCell>
+                            <TableCell className="text-xs">{log.entity}</TableCell>
+                            <TableCell className="hidden md:table-cell text-xs text-muted-foreground max-w-[200px] truncate">
+                              {log.details || "—"}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  <div className="flex items-center justify-between mt-4">
+                    <span className="text-xs text-muted-foreground">
+                      {logTotal} registros — Página {logPage} de {Math.ceil(logTotal / 30)}
+                    </span>
+                    <div className="flex gap-1">
+                      <Button variant="outline" size="sm" disabled={logPage <= 1} onClick={() => fetchLogs(logPage - 1, logFilter)}>
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button variant="outline" size="sm" disabled={logPage * 30 >= logTotal} onClick={() => fetchLogs(logPage + 1, logFilter)}>
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

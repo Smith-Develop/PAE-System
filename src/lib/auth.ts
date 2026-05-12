@@ -3,6 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { ensureDb } from "@/lib/db-init";
+import { logAction } from "@/lib/audit";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
@@ -33,6 +34,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           user.password
         );
         if (!isValid) return null;
+
+        // Registrar login
+        await logAction({
+          userId: user.id,
+          userEmail: user.email,
+          userName: user.name,
+          action: "LOGIN",
+          entity: "auth",
+          details: JSON.stringify({ role: user.role.name }),
+        });
 
         return {
           id: user.id,

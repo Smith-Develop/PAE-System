@@ -127,7 +127,10 @@ export default function LoginPage() {
         </CardContent>
         <CardFooter className="flex justify-center border-t p-4">
           <p className="text-xs text-muted-foreground">
-            Programa de Alimentación Escolar — Gobernación de Antioquia
+            PAE System © {new Date().getFullYear()} Todos los derechos reservados
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Desarrollado <a href="https://github.com/Smith-Develop" target="_blank" rel="noopener noreferrer">@Smith_Develop</a>
           </p>
         </CardFooter>
       </Card>

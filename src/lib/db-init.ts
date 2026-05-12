@@ -1,4 +1,3 @@
-import { hash } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
 let initialized = false;
@@ -8,7 +7,7 @@ export async function ensureDb() {
   initialized = true;
 
   try {
-    const adminRole = await prisma.role.upsert({
+    const role = await prisma.role.upsert({
       where: { name: "ADMIN" },
       update: {},
       create: {
@@ -25,27 +24,25 @@ export async function ensureDb() {
       },
     });
 
-    const adminPassword = await hash("admin123", 12);
-    await prisma.user.upsert({
-      where: { email: "admin@pae.gov.co" },
-      update: {},
-      create: {
-        email: "admin@pae.gov.co",
-        name: "Administrador PAE",
-        password: adminPassword,
-        roleId: adminRole.id,
-        active: true,
-      },
-    });
+    const existing = await prisma.user.findUnique({ where: { email: "admin@pae.gov.co" } });
+    if (!existing) {
+      const { hash } = await import("bcryptjs");
+      const adminPassword = await hash("admin123", 12);
+      await prisma.user.create({
+        data: {
+          email: "admin@pae.gov.co",
+          name: "Administrador PAE",
+          password: adminPassword,
+          roleId: role.id,
+          active: true,
+        },
+      });
+    }
 
-    const names = [
-      "Proteína", "Cereal", "Fruta", "Bebida",
-      "Complemento", "Sopas", "Ensalada", "Postre",
-    ];
+    const names = ["Proteína", "Cereal", "Fruta", "Bebida", "Complemento", "Sopas", "Ensalada", "Postre"];
     for (const name of names) {
       await prisma.component.upsert({ where: { name }, update: {}, create: { name } });
     }
-    console.log("Seed verificado.");
   } catch (e: any) {
     console.log("Seed omitido:", e.message?.substring(0, 80));
   }

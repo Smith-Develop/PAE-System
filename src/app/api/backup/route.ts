@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-// GET: Exportar toda la BD como JSON (backup)
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id) {
@@ -10,13 +9,7 @@ export async function GET() {
   }
 
   try {
-    const [
-      users, roles, operators, clients, providers,
-      foodGroups, masterProducts, components,
-      dishes, dishIngredients, menus, menuDishes,
-      orders, orderItems, orderMaterials,
-      products, purchases, stockTransactions,
-    ] = await Promise.all([
+    const tables = [
       prisma.user.findMany(),
       prisma.role.findMany(),
       prisma.operator.findMany(),
@@ -35,33 +28,33 @@ export async function GET() {
       prisma.product.findMany(),
       prisma.purchase.findMany(),
       prisma.stockTransaction.findMany(),
-    ]);
+    ];
+
+    const results = await Promise.all(tables);
 
     const backup = {
       exportedAt: new Date().toISOString(),
-      version: "1.0",
       data: {
-        users, roles, operators, clients, providers,
-        foodGroups, masterProducts, components,
-        dishes, dishIngredients, menus, menuDishes,
-        orders, orderItems, orderMaterials,
-        products, purchases, stockTransactions,
+        users: results[0], roles: results[1], operators: results[2],
+        clients: results[3], providers: results[4], foodGroups: results[5],
+        masterProducts: results[6], components: results[7], dishes: results[8],
+        dishIngredients: results[9], menus: results[10], menuDishes: results[11],
+        orders: results[12], orderItems: results[13], orderMaterials: results[14],
+        products: results[15], purchases: results[16], stockTransactions: results[17],
       },
     };
 
-    return NextResponse.json(backup, {
+    return new NextResponse(JSON.stringify(backup, null, 2), {
       headers: {
-        "Content-Disposition": `attachment; filename="backup-pae-${new Date().toISOString().slice(0, 10)}.json"`,
         "Content-Type": "application/json",
+        "Content-Disposition": `attachment; filename="backup-pae-${new Date().toISOString().slice(0, 10)}.json"`,
       },
     });
   } catch (error) {
-    console.error("Backup error:", error);
     return NextResponse.json({ error: "Error al generar backup" }, { status: 500 });
   }
 }
 
-// POST: Restaurar BD desde JSON (backup)
 export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -70,15 +63,13 @@ export async function POST(request: Request) {
 
   try {
     const backup = await request.json();
-
     if (!backup?.data) {
-      return NextResponse.json({ error: "Archivo de backup inválido" }, { status: 400 });
+      return NextResponse.json({ error: "Archivo inválido" }, { status: 400 });
     }
 
     const d = backup.data;
 
     await prisma.$transaction(async (tx) => {
-      // Limpiar datos existentes (orden por dependencias FK)
       await tx.stockTransaction.deleteMany();
       await tx.orderMaterial.deleteMany();
       await tx.orderItem.deleteMany();
@@ -98,7 +89,6 @@ export async function POST(request: Request) {
       await tx.user.deleteMany();
       await tx.role.deleteMany();
 
-      // Restaurar datos
       if (d.roles?.length) await tx.role.createMany({ data: d.roles });
       if (d.users?.length) await tx.user.createMany({ data: d.users });
       if (d.operators?.length) await tx.operator.createMany({ data: d.operators });
@@ -119,9 +109,8 @@ export async function POST(request: Request) {
       if (d.stockTransactions?.length) await tx.stockTransaction.createMany({ data: d.stockTransactions });
     });
 
-    return NextResponse.json({ message: "Base de datos restaurada exitosamente" });
+    return NextResponse.json({ message: "Base de datos restaurada" });
   } catch (error) {
-    console.error("Restore error:", error);
-    return NextResponse.json({ error: "Error al restaurar el backup" }, { status: 500 });
+    return NextResponse.json({ error: "Error al restaurar" }, { status: 500 });
   }
 }

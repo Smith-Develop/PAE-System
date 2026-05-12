@@ -19,8 +19,10 @@ export default async function DashboardLayout({
         <header className="flex h-14 shrink-0 items-center gap-2 border-b bg-background px-4">
           <SidebarTrigger />
         </header>
-        <main className="flex-1 w-full max-w-full overflow-x-hidden overflow-y-auto bg-muted/20">
-          {children}
+        <main className="flex-1 w-full max-w-full overflow-x-hidden overflow-y-auto bg-muted/20 animate-fade-in">
+          <div className="animate-slide-up">
+            {children}
+          </div>
         </main>
         <InstallPrompt />
       </SidebarInset>

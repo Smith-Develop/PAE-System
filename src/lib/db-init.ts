@@ -7,28 +7,6 @@ export async function ensureDb() {
   if (initialized) return;
   initialized = true;
 
-  // Verificar si ya hay datos
-  try {
-    const userCount = await prisma.user.count();
-    if (userCount > 0) return;
-  } catch {
-    // La BD o tabla no existe, intentar crear esquema
-    console.log("Inicializando base de datos...");
-    try {
-      const { execSync } = await import("node:child_process");
-      execSync("npx prisma db push --skip-generate --accept-data-loss", {
-        env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL! },
-        stdio: "pipe",
-        timeout: 30000,
-      });
-    } catch (e: any) {
-      console.log("No se pudo hacer db push (esperado en build):", e.message?.substring(0, 80));
-      return;
-    }
-    console.log("Esquema creado.");
-  }
-
-  // Seed
   try {
     const adminRole = await prisma.role.upsert({
       where: { name: "ADMIN" },
@@ -67,9 +45,8 @@ export async function ensureDb() {
     for (const name of names) {
       await prisma.component.upsert({ where: { name }, update: {}, create: { name } });
     }
-
-    console.log("Seed completado: admin@pae.gov.co / admin123");
+    console.log("Seed verificado.");
   } catch (e: any) {
-    console.log("Seed omitido (ya existe o error):", e.message?.substring(0, 80));
+    console.log("Seed omitido:", e.message?.substring(0, 80));
   }
 }

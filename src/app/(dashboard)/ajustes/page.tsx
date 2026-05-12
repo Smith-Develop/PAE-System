@@ -1,7 +1,13 @@
+import { auth } from "@/lib/auth";
 import { SettingsPanel } from "@/components/ajustes/settings-panel";
 import { Settings } from "lucide-react";
 
-export default function AjustesPage() {
+export const dynamic = "force-dynamic";
+
+export default async function AjustesPage() {
+  const session = await auth();
+  const user = session?.user || { name: "", email: "", role: "" };
+
   return (
     <div className="p-6 space-y-6">
       <div className="space-y-1">
@@ -12,7 +18,7 @@ export default function AjustesPage() {
           Configuración del perfil, seguridad y respaldo de datos.
         </p>
       </div>
-      <SettingsPanel />
+      <SettingsPanel user={user} />
     </div>
   );
 }

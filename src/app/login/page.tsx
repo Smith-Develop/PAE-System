@@ -125,7 +125,7 @@ export default function LoginPage() {
             </form>
           </Form>
         </CardContent>
-        <CardFooter className="flex justify-center border-t p-4">
+        <CardFooter className="flex flex-col items-center justify-center border-t p-4">
           <p className="text-xs text-muted-foreground">
             PAE System © {new Date().getFullYear()} Todos los derechos reservados
           </p>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { toast } from "sonner";
 import {
   User,
@@ -14,15 +14,16 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 
-export function SettingsPanel() {
-  const [mounted, setMounted] = useState(false);
-  const [profile, setProfile] = useState({ name: "", email: "", role: "" });
-  const [newName, setNewName] = useState("");
+interface SettingsPanelProps {
+  user: { name?: string | null; email?: string | null; role?: string };
+}
+
+export function SettingsPanel({ user }: SettingsPanelProps) {
+  const [newName, setNewName] = useState(user.name || "");
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [loadingPassword, setLoadingPassword] = useState(false);
   const [loadingBackup, setLoadingBackup] = useState(false);
@@ -32,19 +33,8 @@ export function SettingsPanel() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  useEffect(() => {
-    setMounted(true);
-    fetch("/api/user/profile")
-      .then((r) => { if (!r.ok) throw new Error("Error"); return r.json(); })
-      .then((data) => { setProfile(data); setNewName(data.name || ""); })
-      .catch(() => toast.error("No se pudo cargar el perfil"));
-  }, []);
-
-  if (!mounted) {
-    return <div className="text-center text-muted-foreground py-20">Cargando...</div>;
-  }
-
   const handleUpdateProfile = async () => {
+    if (!newName.trim()) { toast.error("El nombre no puede estar vacío"); return; }
     setLoadingProfile(true);
     try {
       const res = await fetch("/api/user/profile", {
@@ -54,16 +44,14 @@ export function SettingsPanel() {
       });
       if (!res.ok) { const err = await res.json(); throw new Error(err.error); }
       toast.success("Perfil actualizado");
-      setProfile((p) => ({ ...p, name: newName.trim() }));
     } catch (e: any) { toast.error(e.message); }
     finally { setLoadingProfile(false); }
   };
 
   const handleChangePassword = async () => {
-    if (!currentPassword || !newPassword || newPassword !== confirmPassword) {
-      toast.error(newPassword !== confirmPassword ? "Las contraseñas no coinciden" : "Completa todos los campos");
-      return;
-    }
+    if (!currentPassword || !newPassword) { toast.error("Completa todos los campos"); return; }
+    if (newPassword.length < 6) { toast.error("Mínimo 6 caracteres"); return; }
+    if (newPassword !== confirmPassword) { toast.error("Las contraseñas no coinciden"); return; }
     setLoadingPassword(true);
     try {
       const res = await fetch("/api/user/password", {
@@ -120,23 +108,23 @@ export function SettingsPanel() {
         <TabsContent value="profile" className="space-y-6 mt-0">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><User className="h-5 w-5" />Información del Perfil</CardTitle>
+              <CardTitle><User className="h-5 w-5 inline mr-2" />Información del Perfil</CardTitle>
               <CardDescription>Actualiza tu nombre de usuario.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground uppercase">Email</Label>
-                  <p className="font-mono text-sm bg-slate-50 px-3 py-2 rounded border">{profile.email || "—"}</p>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase mb-1">Email</p>
+                  <p className="font-mono text-sm bg-slate-50 px-3 py-2 rounded border">{user.email || "—"}</p>
                 </div>
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground uppercase">Rol</Label>
-                  <Badge variant="secondary" className="font-bold">{profile.role || "—"}</Badge>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase mb-1">Rol</p>
+                  <Badge variant="secondary" className="font-bold">{user.role || "—"}</Badge>
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="name">Nombre</Label>
-                <Input id="name" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Tu nombre" />
+              <div>
+                <p className="text-xs text-muted-foreground uppercase mb-1">Nombre</p>
+                <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Tu nombre" />
               </div>
               <Button onClick={handleUpdateProfile} disabled={loadingProfile}>
                 <Save className="h-4 w-4 mr-2" />{loadingProfile ? "Guardando..." : "Guardar Cambios"}
@@ -148,21 +136,21 @@ export function SettingsPanel() {
         <TabsContent value="security" className="space-y-6 mt-0">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Key className="h-5 w-5" />Cambiar Contraseña</CardTitle>
+              <CardTitle><Key className="h-5 w-5 inline mr-2" />Cambiar Contraseña</CardTitle>
               <CardDescription>Mínimo 6 caracteres.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="cp">Contraseña Actual</Label>
-                <Input id="cp" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+              <div>
+                <p className="text-xs text-muted-foreground uppercase mb-1">Contraseña Actual</p>
+                <Input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="np">Nueva Contraseña</Label>
-                <Input id="np" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+              <div>
+                <p className="text-xs text-muted-foreground uppercase mb-1">Nueva Contraseña</p>
+                <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="cpa">Confirmar Nueva</Label>
-                <Input id="cpa" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+              <div>
+                <p className="text-xs text-muted-foreground uppercase mb-1">Confirmar Nueva</p>
+                <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
               </div>
               <Button onClick={handleChangePassword} disabled={loadingPassword}>
                 {loadingPassword ? "Actualizando..." : "Actualizar Contraseña"}
@@ -174,7 +162,7 @@ export function SettingsPanel() {
         <TabsContent value="backup" className="space-y-6 mt-0">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Download className="h-5 w-5" />Copias de Seguridad</CardTitle>
+              <CardTitle><Download className="h-5 w-5 inline mr-2" />Copias de Seguridad</CardTitle>
               <CardDescription>Exporta todos los datos en formato JSON.</CardDescription>
             </CardHeader>
             <CardContent>
@@ -185,7 +173,7 @@ export function SettingsPanel() {
           </Card>
           <Card className="border-amber-200 bg-amber-50/30">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-amber-800"><Upload className="h-5 w-5" />Restaurar</CardTitle>
+              <CardTitle className="text-amber-800"><Upload className="h-5 w-5 inline mr-2" />Restaurar</CardTitle>
               <CardDescription className="text-amber-700">
                 <AlertTriangle className="h-4 w-4 inline mr-1" />Sobrescribe todos los datos actuales.
               </CardDescription>

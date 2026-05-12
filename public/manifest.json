@@ -1,6 +1,6 @@
 {
-  "name": "PAE Antioquia - Gestión Alimentación Escolar",
-  "short_name": "PAE Antioquia",
+  "name": "PAE System - Programa de Alimentación Escolar",
+  "short_name": "PAE System",
   "description": "Sistema B2B para la gestión del Programa de Alimentación Escolar (PAE) en Antioquia, Colombia. Automatiza recetas, pedidos, explosión de materiales y reportes de Gobernación.",
   "start_url": "/maestro",
   "display": "standalone",

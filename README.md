@@ -1,4 +1,4 @@
-# PAE Antioquia - Sistema de Gestión de Alimentación Escolar
+# PAE System - Gestión de Alimentación Escolar
 
 Aplicación web B2B para la gestión del **Programa de Alimentación Escolar (PAE)** en Antioquia, Colombia. Automatiza el flujo logístico completo: desde la definición de recetas y el ingreso de pedidos diarios, hasta la "explosión de materiales" (cálculo de insumos) y la generación del **Reporte de Proveeduría de Alimentos** exigido por la Gobernación (Resolución 719).
 

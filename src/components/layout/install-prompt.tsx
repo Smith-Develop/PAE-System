@@ -78,7 +78,7 @@ export function InstallPrompt() {
       // Manual instructions for desktop
       alert(
         "Para instalar la app:\n\n" +
-        "• Chrome/Edge: Haz clic en el ícono ⊕ en la barra de direcciones, o en el menú (⋮) → 'Instalar PAE Antioquia'\n\n" +
+        "• Chrome/Edge: Haz clic en el ícono ⊕ en la barra de direcciones, o en el menú (⋮) → 'Instalar PAE System'\n\n" +
         "• Celular Android: Abre el menú (⋮) → 'Agregar a pantalla de inicio'\n\n" +
         "• iPhone/iPad: Toca el botón Compartir → 'Agregar a la pantalla de inicio'"
       );
@@ -98,7 +98,7 @@ export function InstallPrompt() {
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-slate-800">Instalar PAE Antioquia</p>
+          <p className="text-sm font-bold text-slate-800">Instalar PAE System</p>
           <p className="text-xs text-muted-foreground mt-0.5">
             {deferredPrompt
               ? "Agrega esta app a tu pantalla de inicio para acceso rápido."

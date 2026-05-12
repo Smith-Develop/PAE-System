@@ -8,10 +8,10 @@ const fontSans = Inter({ variable: "--font-sans", subsets: ["latin"] });
 const fontMono = Fira_Code({ variable: "--font-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "PAE Antioquia",
+  title: "PAE System",
   description: "Sistema de gestión del Programa de Alimentación Escolar (PAE)",
   manifest: "/manifest.json",
-  appleWebApp: { capable: true, title: "PAE Antioquia", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "PAE System", statusBarStyle: "default" },
   icons: { icon: "/icons/icon-192.png", apple: "/icons/icon-192.png", shortcut: "/icons/icon-192.png" },
 };
 

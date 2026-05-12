@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import {
   User, Key, Save, Download, Upload, Database, AlertTriangle,
-  Users, Plus, Edit, Trash2, Shield, Mail,
+  Users, Plus, Edit, Trash2, Shield, Mail, Wrench, Package, Truck,
+  Building, Layers, ChefHat, ClipboardList, Calculator, Receipt, Box,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,8 @@ export function SettingsPanel({ user }: SettingsPanelProps) {
   const [loadingBackup, setLoadingBackup] = useState(false);
   const [loadingRestore, setLoadingRestore] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Mantenimiento
+  const [maintenanceLoading, setMaintenanceLoading] = useState<string | null>(null);
   // Usuarios
   const [userList, setUserList] = useState<UserData[]>([]);
   const [roles, setRoles] = useState<{ id: string; name: string }[]>([]);
@@ -127,6 +130,18 @@ export function SettingsPanel({ user }: SettingsPanelProps) {
     finally { setLoadingRestore(false); e.target.value = ""; }
   };
 
+  // --- Mantenimiento ---
+  const handleBatchDelete = async (entity: string, label: string) => {
+    if (!confirm(`¿Eliminar TODOS los registros de "${label}"? Esta acción NO se puede deshacer.`)) return;
+    setMaintenanceLoading(entity);
+    try {
+      const res = await fetch("/api/maintenance", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ entity }) });
+      if (!res.ok) { const err = await res.json(); throw new Error(err.error); }
+      toast.success(`"${label}" eliminado correctamente. Recarga la página.`);
+    } catch (e: any) { toast.error(e.message); }
+    finally { setMaintenanceLoading(null); }
+  };  
+
   // --- Usuarios ---
   const openCreateUser = () => {
     setEditingUser(null);
@@ -182,6 +197,9 @@ export function SettingsPanel({ user }: SettingsPanelProps) {
           <TabsTrigger value="security"><Key className="h-4 w-4 mr-2" />Contraseña</TabsTrigger>
           <TabsTrigger value="users"><Users className="h-4 w-4 mr-2" />Usuarios</TabsTrigger>
           <TabsTrigger value="backup"><Database className="h-4 w-4 mr-2" />Backup</TabsTrigger>
+          {user.role === "ADMIN" && (
+            <TabsTrigger value="maintenance"><Wrench className="h-4 w-4 mr-2" />Mantenimiento</TabsTrigger>
+          )}
         </TabsList>
 
         {/* PERFIL */}
@@ -318,6 +336,50 @@ export function SettingsPanel({ user }: SettingsPanelProps) {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* MANTENIMIENTO (solo admin) */}
+        {user.role === "ADMIN" && (
+        <TabsContent value="maintenance" className="space-y-6 mt-0">
+          <Card className="border-red-200">
+            <CardHeader>
+              <CardTitle className="text-red-700 flex items-center gap-2"><Wrench className="h-5 w-5" />Limpieza de Datos</CardTitle>
+              <CardDescription className="text-red-600">
+                <AlertTriangle className="h-4 w-4 inline mr-1" />Estas acciones eliminan registros permanentemente. No se pueden deshacer.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {[
+                  { entity: "providers", label: "Proveedores", icon: Truck },
+                  { entity: "operators", label: "Operadores", icon: Building },
+                  { entity: "clients", label: "Clientes", icon: Users },
+                  { entity: "foodGroups", label: "Grupos Alimentarios", icon: Layers },
+                  { entity: "dishes", label: "Platos", icon: ChefHat },
+                  { entity: "menus", label: "Menús", icon: ClipboardList },
+                  { entity: "orders", label: "Pedidos", icon: Calculator },
+                  { entity: "purchases", label: "Compras", icon: Receipt },
+                  { entity: "products", label: "Productos x Proveedor", icon: Package },
+                  { entity: "masterProducts", label: "Catálogo General", icon: Box },
+                  { entity: "all", label: "LIMPIAR TODO", icon: Trash2 },
+                ].map((btn) => (
+                  <Button
+                    key={btn.entity}
+                    variant={btn.entity === "all" ? "destructive" : "outline"}
+                    className="justify-start h-auto py-3 border-red-200 hover:bg-red-50 text-red-700"
+                    onClick={() => handleBatchDelete(btn.entity, btn.label)}
+                    disabled={maintenanceLoading === btn.entity}
+                  >
+                    <btn.icon className="h-4 w-4 mr-2 shrink-0" />
+                    <span className="text-xs text-left leading-tight">
+                      {maintenanceLoading === btn.entity ? "Eliminando..." : `Eliminar ${btn.label}`}
+                    </span>
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        )}
       </Tabs>
 
       {/* Modal Crear/Editar Usuario */}

@@ -1,67 +1,35 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { productSchema } from "@/lib/validations";
+import { auth } from "@/lib/auth";
+import { logAction } from "@/lib/audit";
 
-export async function PUT(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const body = await request.json();
     const result = productSchema.safeParse(body);
+    if (!result.success) return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
 
-    if (!result.success) {
-      return NextResponse.json(
-        { error: "Datos inválidos", details: result.error.issues },
-        { status: 400 }
-      );
-    }
-
-    const product = await prisma.product.update({
-      where: { id },
-      data: result.data,
-    });
-
+    const product = await prisma.product.update({ where: { id }, data: result.data });
+    const session = await auth();
+    await logAction({ userId: session?.user?.id || "", userEmail: session?.user?.email || "", userName: session?.user?.name || "", action: "UPDATE", entity: "product", entityId: id });
     return NextResponse.json(product);
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Error al actualizar el producto" },
-      { status: 500 }
-    );
-  }
+  } catch (error) { return NextResponse.json({ error: "Error al actualizar" }, { status: 500 }); }
 }
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    
-    // Verificar si hay dependencias
-    const [purchaseCount, orderMaterialCount, stockTxCount] = await Promise.all([
+    const [purchaseCount, orderMatCount] = await Promise.all([
       prisma.purchase.count({ where: { productId: id } }),
       prisma.orderMaterial.count({ where: { productId: id } }),
-      prisma.stockTransaction.count({ where: { productId: id } }),
     ]);
+    if (purchaseCount > 0 || orderMatCount > 0) return NextResponse.json({ error: "Está en uso" }, { status: 400 });
+    await prisma.product.delete({ where: { id } });
 
-    if (purchaseCount > 0 || orderMaterialCount > 0 || stockTxCount > 0) {
-      return NextResponse.json(
-        { error: "No se puede eliminar el producto porque está siendo usado en compras o pedidos." },
-        { status: 400 }
-      );
-    }
-
-    await prisma.product.delete({
-      where: { id },
-    });
-
+    const session = await auth();
+    await logAction({ userId: session?.user?.id || "", userEmail: session?.user?.email || "", userName: session?.user?.name || "", action: "DELETE", entity: "product", entityId: id });
     return new NextResponse(null, { status: 204 });
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Error al eliminar el producto" },
-      { status: 500 }
-    );
-  }
+  } catch (error) { return NextResponse.json({ error: "Error al eliminar" }, { status: 500 }); }
 }

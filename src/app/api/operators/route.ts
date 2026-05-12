@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { operatorSchema } from "@/lib/validations";
+import { auth } from "@/lib/auth";
+import { logAction } from "@/lib/audit";
 
 export async function GET() {
   try {
@@ -30,6 +32,17 @@ export async function POST(request: Request) {
 
     const operator = await prisma.operator.create({
       data: result.data,
+    });
+
+    const session = await auth();
+    await logAction({
+      userId: session?.user?.id || "",
+      userEmail: session?.user?.email || "",
+      userName: session?.user?.name || "",
+      action: "CREATE",
+      entity: "operator",
+      entityId: operator.id,
+      details: JSON.stringify({ nombre: operator.nombreOperador, nit: operator.nitOperador }),
     });
 
     return NextResponse.json(operator, { status: 201 });

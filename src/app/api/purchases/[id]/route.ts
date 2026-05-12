@@ -1,56 +1,25 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { purchaseSchema } from "@/lib/validations";
+import { auth } from "@/lib/auth";
+import { logAction } from "@/lib/audit";
 
-export async function PUT(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const body = await request.json();
-    const result = purchaseSchema.safeParse(body);
-
-    if (!result.success) {
-      return NextResponse.json(
-        { error: "Datos inválidos", details: result.error.issues },
-        { status: 400 }
-      );
-    }
-
-    const purchase = await prisma.purchase.update({
-      where: { id },
-      data: result.data,
-      include: {
-        product: true,
-      },
-    });
-
+    const data = await request.json();
+    const purchase = await prisma.purchase.update({ where: { id }, data });
+    const session = await auth();
+    await logAction({ userId: session?.user?.id || "", userEmail: session?.user?.email || "", userName: session?.user?.name || "", action: "UPDATE", entity: "purchase", entityId: id });
     return NextResponse.json(purchase);
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Error al actualizar la compra" },
-      { status: 500 }
-    );
-  }
+  } catch (error) { return NextResponse.json({ error: "Error al actualizar" }, { status: 500 }); }
 }
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    
-    await prisma.purchase.delete({
-      where: { id },
-    });
-
-    return new NextResponse(null, { status: 204 });
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Error al eliminar la compra" },
-      { status: 500 }
-    );
-  }
+    await prisma.purchase.delete({ where: { id } });
+    const session = await auth();
+    await logAction({ userId: session?.user?.id || "", userEmail: session?.user?.email || "", userName: session?.user?.name || "", action: "DELETE", entity: "purchase", entityId: id });
+    return NextResponse.json({ message: "Eliminado" });
+  } catch (error) { return NextResponse.json({ error: "Error al eliminar" }, { status: 500 }); }
 }

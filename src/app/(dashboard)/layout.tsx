@@ -1,5 +1,6 @@
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
+import { InstallPrompt } from "@/components/layout/install-prompt";
 import { ensureDb } from "@/lib/db-init";
 
 export const dynamic = "force-dynamic";
@@ -21,6 +22,7 @@ export default async function DashboardLayout({
         <main className="flex-1 w-full max-w-full overflow-x-hidden overflow-y-auto bg-muted/20">
           {children}
         </main>
+        <InstallPrompt />
       </SidebarInset>
     </SidebarProvider>
   );

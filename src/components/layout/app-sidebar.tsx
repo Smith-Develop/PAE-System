@@ -101,7 +101,7 @@ export function AppSidebar() {
   return (
     <Sidebar variant="inset">
       <SidebarHeader className="flex flex-row items-center gap-3 px-4 pt-6 pb-4">
-        <div className="flex aspect-square size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm overflow-hidden">
+        <div className="flex items-center justify-center">
           <img src="/logo.png" alt="PAE System" className="size-9 object-contain" />
         </div>
         <div className="flex flex-col gap-0.5 leading-none">

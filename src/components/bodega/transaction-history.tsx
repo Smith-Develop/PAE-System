@@ -12,7 +12,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { StockTransaction } from "@/types";
 
 interface TransactionHistoryProps {
@@ -51,9 +50,9 @@ export function TransactionHistory({ productId }: TransactionHistoryProps) {
   if (isLoading) {
     return (
       <div className="space-y-2 p-4">
-        <Skeleton className="h-8 w-full" />
-        <Skeleton className="h-8 w-full" />
-        <Skeleton className="h-8 w-full" />
+        <div className="animate-pulse bg-slate-200 rounded h-8 w-full" />
+        <div className="animate-pulse bg-slate-200 rounded h-8 w-full" />
+        <div className="animate-pulse bg-slate-200 rounded h-8 w-full" />
       </div>
     );
   }

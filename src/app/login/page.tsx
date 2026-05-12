@@ -72,8 +72,8 @@ export default function LoginPage() {
     <div className="flex h-screen w-full items-center justify-center bg-muted/40 p-4">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-2 text-center pb-6">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-            <ChefHat className="h-6 w-6 text-primary" />
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 overflow-hidden">
+            <img src="/logo.png" alt="PAE System" className="h-12 w-12 object-contain" />
           </div>
           <CardTitle className="text-2xl font-heading tracking-tight">PAE System</CardTitle>
           <CardDescription>

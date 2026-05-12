@@ -9,10 +9,10 @@ const fontMono = Fira_Code({ variable: "--font-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "PAE Antioquia",
-  description: "Sistema de gestión del Programa de Alimentación Escolar (PAE) - Antioquia, Colombia",
+  description: "Sistema de gestión del Programa de Alimentación Escolar (PAE)",
   manifest: "/manifest.json",
   appleWebApp: { capable: true, title: "PAE Antioquia", statusBarStyle: "default" },
-  icons: { icon: "/icons/icon-192.png", apple: "/icons/icon-192.png" },
+  icons: { icon: "/icons/icon-192.png", apple: "/icons/icon-192.png", shortcut: "/icons/icon-192.png" },
 };
 
 export const viewport: Viewport = {
@@ -24,16 +24,23 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="es" className={`${fontHeading.variable} ${fontSans.variable} ${fontMono.variable} h-full antialiased`}>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{})}`,
-          }}
-        />
-      </head>
       <body className="min-h-full flex flex-col bg-background text-foreground font-sans">
         {children}
         <Toaster richColors position="top-right" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').then(
+                    function(reg) { console.log('SW registered:', reg.scope); },
+                    function(err) { console.log('SW registration failed:', err); }
+                  );
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );

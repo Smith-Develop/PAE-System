@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="100" fill="#2563eb"/>
+  <circle cx="256" cy="200" r="100" fill="white" opacity="0.2"/>
+  <path d="M180 320 Q180 420 256 420 Q332 420 332 320" fill="white" stroke="white" stroke-width="8"/>
+  <text x="256" y="240" font-family="Arial" font-size="80" font-weight="bold" fill="white" text-anchor="middle">PAE</text>
+  <text x="256" y="310" font-family="Arial" font-size="30" fill="white" text-anchor="middle" opacity="0.9">ANTIOQUIA</text>
+</svg>

@@ -1,25 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { compare, hash } from "bcryptjs";
-
-export async function GET() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-  }
-
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { id: true, email: true, name: true, role: { select: { name: true } } },
-  });
-
-  if (!user) {
-    return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
-  }
-
-  return NextResponse.json(user);
-}
 
 export async function PUT(request: Request) {
   const session = await auth();
@@ -27,14 +8,29 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
-  const { name } = await request.json();
-  if (!name || typeof name !== "string" || !name.trim()) {
-    return NextResponse.json({ error: "El nombre es requerido" }, { status: 400 });
+  const { name, email } = await request.json();
+
+  const data: any = {};
+  if (name && typeof name === "string" && name.trim()) {
+    data.name = name.trim();
+  }
+  if (email && typeof email === "string" && email.trim()) {
+    const exists = await prisma.user.findFirst({
+      where: { email: email.trim(), id: { not: session.user.id } },
+    });
+    if (exists) {
+      return NextResponse.json({ error: "El email ya está en uso" }, { status: 400 });
+    }
+    data.email = email.trim();
+  }
+
+  if (Object.keys(data).length === 0) {
+    return NextResponse.json({ error: "Sin cambios" }, { status: 400 });
   }
 
   const user = await prisma.user.update({
     where: { id: session.user.id },
-    data: { name: name.trim() },
+    data,
     select: { id: true, email: true, name: true },
   });
 

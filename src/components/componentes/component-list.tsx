@@ -244,7 +244,7 @@ export function ComponentList({ components }: ComponentListProps) {
                   className="cursor-pointer hover:bg-slate-50/80 transition-colors"
                 >
                   <TableCell>
-                    <span className="font-bold text-slate-800 text-lg truncate max-w-[300px] block" title={c.name}>{c.name}</span>
+                    <span className="font-bold text-slate-800 text-lg break-words max-w-[250px] block">{c.name}</span>
                   </TableCell>
                   <TableCell className="text-center">
                     <Badge variant="secondary" className="font-mono">

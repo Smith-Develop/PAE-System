@@ -188,9 +188,9 @@ export function DishList({ dishes, masterProducts, components }: DishListProps) 
                   onClick={() => setSelectedDish(d)}
                 >
                   <TableCell>
-                    <div className="font-bold text-slate-800 truncate max-w-[200px]" title={d.nombre}>{d.nombre}</div>
+                    <div className="font-bold text-slate-800 break-words max-w-[250px]">{d.nombre}</div>
                     {d.descripcion && (
-                      <div className="text-xs text-muted-foreground mt-0.5" title={d.descripcion || undefined}>
+                      <div className="text-xs text-muted-foreground mt-0.5 break-words max-w-[250px]">
                         {d.descripcion}
                       </div>
                     )}

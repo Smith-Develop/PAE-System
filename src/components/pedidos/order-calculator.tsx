@@ -601,8 +601,7 @@ export function OrderCalculator({
                                   sources.map((s, i) => (
                                     <div
                                       key={i}
-                                      className="text-[10px] leading-tight truncate"
-                                      title={s}
+                                      className="text-[10px] leading-tight break-words max-w-[250px]"
                                     >
                                       {s}
                                     </div>
@@ -614,10 +613,10 @@ export function OrderCalculator({
                             );
                           })()}
                         </TableCell>
-                        <TableCell className="font-medium truncate max-w-[150px]" title={item.productName}>
+                        <TableCell className="font-medium break-words max-w-[250px]">
                           {item.productName}
                         </TableCell>
-                        <TableCell className="min-w-[160px] truncate max-w-[300px]">
+                        <TableCell className="min-w-[160px] break-words max-w-[250px]">
                           <Select
                             value={
                               selectedVariants[item.masterProductId] || ""
@@ -762,13 +761,13 @@ export function OrderCalculator({
                         </TableCell>
                         <TableCell>
                           <div>
-                            <span className="font-medium text-sm text-primary">
+                            <span className="font-medium text-sm text-primary break-words max-w-[250px]">
                               {order.client?.nombre || "—"}
                             </span>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm text-slate-600">
+                          <span className="text-sm text-slate-600 break-words max-w-[250px]">
                             {order.operator?.nombreOperador || "—"}
                           </span>
                         </TableCell>

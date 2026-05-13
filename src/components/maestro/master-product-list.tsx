@@ -200,7 +200,7 @@ export function MasterProductList({
                     onClick={() => setSelectedItem(p)}
                   >
                     <TableCell>
-                      <div className="font-bold text-slate-800 truncate max-w-[280px]" title={p.nombre}>
+                      <div className="font-bold text-slate-800 break-words max-w-[250px]">
                         {p.nombre}
                       </div>
                     </TableCell>

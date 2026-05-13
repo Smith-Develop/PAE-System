@@ -153,26 +153,26 @@ export function OperatorList({ initialOperators }: OperatorListProps) {
                 <TableRow key={op.id} onClick={() => setSelectedOperator(op)} className="cursor-pointer hover:bg-slate-50">
                   <TableCell>
                     <div className="font-medium">
-                      <span className="truncate max-w-[200px] block" title={op.nombreOperador}>{op.nombreOperador}</span>
+                      <span className="break-words max-w-[250px] block">{op.nombreOperador}</span>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <span className="truncate max-w-[120px] block" title={op.nitOperador}>{op.nitOperador}</span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      <span className="truncate max-w-[150px] block" title={op.modeloAtencion}>{op.modeloAtencion}</span>
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      <span className="truncate max-w-[150px] block" title={op.modalidadAtencion}>{op.modalidadAtencion}</span>
-                    </div>
+                    <span className="break-words max-w-[180px] block">{op.nitOperador}</span>
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">
-                      <span className="truncate max-w-[150px] block" title={op.direccionBodega}>{op.direccionBodega}</span>
+                      <span className="break-words max-w-[250px] block">{op.modeloAtencion}</span>
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      <span className="truncate max-w-[150px] block" title={op.municipioBodega}>{op.municipioBodega}</span>
+                      <span className="break-words max-w-[250px] block">{op.modalidadAtencion}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm">
+                      <span className="break-words max-w-[250px] block">{op.direccionBodega}</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      <span className="break-words max-w-[250px] block">{op.municipioBodega}</span>
                     </div>
                   </TableCell>
                   <TableCell className="text-right">

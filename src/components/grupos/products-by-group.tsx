@@ -339,18 +339,14 @@ export function ProductsByGroup({ masterProducts, foodGroups }: ProductsByGroupP
                 paginatedProducts.map((p) => (
                   <TableRow key={p.id} className="cursor-pointer hover:bg-slate-50/50 transition-colors" onClick={() => setSelectedItem(p)}>
                     <TableCell className="py-3">
-                      <span
-                        className="font-bold text-slate-800 block truncate max-w-[260px]"
-                        title={p.nombre}
-                      >
+                      <span className="font-bold text-slate-800 block break-words max-w-[250px]">
                         {p.nombre}
                       </span>
                     </TableCell>
                     <TableCell className="py-3">
                       <Badge
                         variant="secondary"
-                        className="font-semibold truncate max-w-[200px] block"
-                        title={p.foodGroup?.name || ""}
+                        className="font-semibold break-words max-w-[200px]"
                       >
                         {p.foodGroup?.name || "—"}
                       </Badge>

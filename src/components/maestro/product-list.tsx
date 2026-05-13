@@ -174,7 +174,7 @@ export function ProductList({ products, masterProducts, providers, foodGroups }:
                 paginatedProducts.map((p) => (
                   <TableRow key={p.id} className="cursor-pointer hover:bg-slate-50/80 transition-colors" onClick={() => setSelectedItem(p)}>
                     <TableCell>
-                      <div className="font-bold text-slate-800 truncate max-w-[280px]" title={p.descripcionMarca}>{p.descripcionMarca}</div>
+                      <div className="font-bold text-slate-800 break-words max-w-[250px]">{p.descripcionMarca}</div>
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary" className="font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">
@@ -182,11 +182,11 @@ export function ProductList({ products, masterProducts, providers, foodGroups }:
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="text-sm font-medium text-slate-700 truncate max-w-[200px]" title={p.provider?.razonSocial}>{p.provider?.razonSocial}</div>
+                      <div className="text-sm font-medium text-slate-700 break-words max-w-[250px]">{p.provider?.razonSocial}</div>
                       <div className="text-[10px] text-muted-foreground uppercase tracking-tight">NIT: {p.provider?.nit}</div>
                     </TableCell>
                     <TableCell>
-                      <code className="text-[11px] bg-slate-100 px-2 py-0.5 rounded font-mono border border-slate-200 truncate max-w-[120px] block" title={p.registroSanitario}>
+                      <code className="text-[11px] bg-slate-100 px-2 py-0.5 rounded font-mono border border-slate-200 break-words max-w-[180px] block">
                         {p.registroSanitario}
                       </code>
                     </TableCell>

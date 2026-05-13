@@ -89,8 +89,8 @@ export function StockList({ initialProducts }: StockListProps) {
                 paginatedProducts.map((p) => (
                   <TableRow key={p.id} className="hover:bg-slate-50/80 transition-colors cursor-pointer" onClick={() => setSelectedDetailProduct(p)}>
                     <TableCell>
-                      <div className="font-bold text-slate-800 truncate max-w-[200px]" title={p.masterProduct?.nombre}>{p.masterProduct?.nombre}</div>
-                      <div className="text-xs text-muted-foreground italic truncate max-w-[200px]" title={p.descripcionMarca}>{p.descripcionMarca}</div>
+                      <div className="font-bold text-slate-800 break-words max-w-[250px]">{p.masterProduct?.nombre}</div>
+                      <div className="text-xs text-muted-foreground italic break-words max-w-[250px]">{p.descripcionMarca}</div>
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary" className="font-semibold bg-slate-100 text-slate-700">
@@ -98,7 +98,7 @@ export function StockList({ initialProducts }: StockListProps) {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="text-sm font-medium text-slate-700">{p.provider?.razonSocial}</div>
+                      <div className="text-sm font-medium text-slate-700 break-words max-w-[250px]">{p.provider?.razonSocial}</div>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex flex-col items-end">

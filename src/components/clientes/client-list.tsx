@@ -183,9 +183,9 @@ export function ClientList({ clients }: ClientListProps) {
                 >
                   <TableCell>
                     <div className="font-bold text-slate-800">
-                      <span className="truncate max-w-[200px] block" title={c.nombre}>{c.nombre}</span>
+                      <span className="break-words max-w-[250px] block">{c.nombre}</span>
                     </div>
-                    <div className="text-[11px] text-muted-foreground truncate max-w-[200px] block" title={c.direccion || ""}>{c.direccion}</div>
+                    <div className="text-[11px] text-muted-foreground break-words max-w-[250px] block">{c.direccion}</div>
                   </TableCell>
                   <TableCell>
                     <code className="text-sm bg-slate-100 px-2 py-0.5 rounded font-mono border border-slate-200">
@@ -193,15 +193,15 @@ export function ClientList({ clients }: ClientListProps) {
                     </code>
                   </TableCell>
                   <TableCell>
-                    <span className="text-sm font-medium text-slate-600 truncate max-w-[120px] block" title={c.municipio || ""}>{c.municipio}</span>
+                    <span className="text-sm font-medium text-slate-600 break-words max-w-[120px] block">{c.municipio}</span>
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">
                       {c.contacto && (
-                        <div className="font-medium truncate max-w-[120px] block" title={c.contacto}>{c.contacto}</div>
+                        <div className="font-medium break-words max-w-[250px] block">{c.contacto}</div>
                       )}
                       {(c.telefono || c.correo) && (
-                        <div className="text-xs text-muted-foreground truncate max-w-[120px] block" title={[c.telefono, c.correo].filter(Boolean).join(" · ")}>
+                        <div className="text-xs text-muted-foreground break-words max-w-[250px] block">
                           {c.telefono && <span>{c.telefono}</span>}
                           {c.telefono && c.correo && <span> · </span>}
                           {c.correo && <span>{c.correo}</span>}

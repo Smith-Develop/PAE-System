@@ -164,13 +164,13 @@ export function PurchaseList({ initialPurchases, products, operators }: Purchase
                     {format(new Date(p.fechaCompra), "dd MMM yyyy", { locale: es })}
                   </TableCell>
                   <TableCell>
-                    <div className="font-medium text-xs">{p.operator?.nombreOperador}</div>
+                    <div className="font-medium text-xs break-words max-w-[250px]">{p.operator?.nombreOperador}</div>
                   </TableCell>
-                  <TableCell className="font-medium">
-                    {p.product?.masterProduct?.nombre}
-                    <div className="text-[10px] text-muted-foreground italic">{p.product?.descripcionMarca}</div>
-                  </TableCell>
-                  <TableCell className="text-xs">{p.product?.provider?.razonSocial}</TableCell>
+                  <TableCell className="font-medium break-words max-w-[250px]">
+                        {p.product?.masterProduct?.nombre}
+                        <div className="text-[10px] text-muted-foreground italic break-words">{p.product?.descripcionMarca}</div>
+                      </TableCell>
+                  <TableCell className="text-xs break-words max-w-[250px]">{p.product?.provider?.razonSocial}</TableCell>
                   <TableCell className="text-right">
                     {p.cantidadComprada} <span className="text-muted-foreground text-xs">{p.product?.masterProduct?.unidadMedida}</span>
                   </TableCell>

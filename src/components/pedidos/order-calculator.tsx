@@ -599,10 +599,10 @@ export function OrderCalculator({
                               <div className="space-y-0.5">
                                 {sources.length > 0 ? (
                                   sources.map((s, i) => (
-                                    <div
-                                      key={i}
-                                      className="text-[10px] leading-tight break-words max-w-[250px]"
-                                    >
+                                      <div
+                                       key={i}
+                                       className="text-[10px] leading-tight break-all whitespace-normal overflow-hidden max-w-[250px]"
+                                     >
                                       {s}
                                     </div>
                                   ))
@@ -613,10 +613,10 @@ export function OrderCalculator({
                             );
                           })()}
                         </TableCell>
-                        <TableCell className="font-medium break-words max-w-[250px]">
+                        <TableCell className="font-medium break-all whitespace-normal overflow-hidden max-w-[250px]">
                           {item.productName}
                         </TableCell>
-                        <TableCell className="min-w-[160px] break-words max-w-[250px]">
+                        <TableCell className="min-w-[160px] break-all whitespace-normal overflow-hidden max-w-[250px]">
                           <Select
                             value={
                               selectedVariants[item.masterProductId] || ""
@@ -761,13 +761,13 @@ export function OrderCalculator({
                         </TableCell>
                         <TableCell>
                           <div>
-                            <span className="font-medium text-sm text-primary break-words max-w-[250px]">
+                            <span className="font-medium text-sm text-primary break-all whitespace-normal overflow-hidden max-w-[250px]">
                               {order.client?.nombre || "—"}
                             </span>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm text-slate-600 break-words max-w-[250px]">
+                          <span className="text-sm text-slate-600 break-all whitespace-normal overflow-hidden max-w-[250px]">
                             {order.operator?.nombreOperador || "—"}
                           </span>
                         </TableCell>

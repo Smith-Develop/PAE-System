@@ -188,9 +188,9 @@ export function DishList({ dishes, masterProducts, components }: DishListProps) 
                   onClick={() => setSelectedDish(d)}
                 >
                   <TableCell>
-                    <div className="font-bold text-slate-800 break-words max-w-[250px]">{d.nombre}</div>
+                    <div className="font-bold text-slate-800 break-all whitespace-normal overflow-hidden max-w-[250px]">{d.nombre}</div>
                     {d.descripcion && (
-                      <div className="text-xs text-muted-foreground mt-0.5 break-words max-w-[250px]">
+                      <div className="text-xs text-muted-foreground mt-0.5 break-all whitespace-normal overflow-hidden max-w-[250px]">
                         {d.descripcion}
                       </div>
                     )}
@@ -198,7 +198,7 @@ export function DishList({ dishes, masterProducts, components }: DishListProps) 
                   <TableCell>
                     <Badge
                       variant="outline"
-                      className="font-semibold border bg-slate-100 text-slate-700"
+                      className="font-semibold border bg-slate-100 text-slate-700 break-all whitespace-normal"
                     >
                       {d.componente?.name || "Sin componente"}
                     </Badge>
@@ -313,7 +313,7 @@ export function DishList({ dishes, masterProducts, components }: DishListProps) 
                     <TableBody>
                       {selectedDish.ingredients.map((ing) => (
                         <TableRow key={ing.id}>
-                          <TableCell className="text-sm font-medium break-words">
+                          <TableCell className="text-sm font-medium break-all whitespace-normal overflow-hidden">
                             {ing.masterProduct?.nombre || "Desconocido"}
                           </TableCell>
                           <TableCell className="text-right font-mono text-sm">

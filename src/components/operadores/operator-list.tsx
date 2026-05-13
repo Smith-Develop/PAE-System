@@ -153,26 +153,26 @@ export function OperatorList({ initialOperators }: OperatorListProps) {
                 <TableRow key={op.id} onClick={() => setSelectedOperator(op)} className="cursor-pointer hover:bg-slate-50">
                   <TableCell>
                     <div className="font-medium">
-                      <span className="break-words max-w-[250px] block">{op.nombreOperador}</span>
+                      <span className="break-all whitespace-normal overflow-hidden max-w-[250px] block">{op.nombreOperador}</span>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <span className="break-words max-w-[180px] block">{op.nitOperador}</span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      <span className="break-words max-w-[250px] block">{op.modeloAtencion}</span>
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      <span className="break-words max-w-[250px] block">{op.modalidadAtencion}</span>
-                    </div>
+                    <span className="break-all whitespace-normal overflow-hidden max-w-[180px] block">{op.nitOperador}</span>
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">
-                      <span className="break-words max-w-[250px] block">{op.direccionBodega}</span>
+                      <span className="break-all whitespace-normal overflow-hidden max-w-[250px] block">{op.modeloAtencion}</span>
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      <span className="break-words max-w-[250px] block">{op.municipioBodega}</span>
+                      <span className="break-all whitespace-normal overflow-hidden max-w-[250px] block">{op.modalidadAtencion}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm">
+                      <span className="break-all whitespace-normal overflow-hidden max-w-[250px] block">{op.direccionBodega}</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      <span className="break-all whitespace-normal overflow-hidden max-w-[250px] block">{op.municipioBodega}</span>
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
@@ -205,7 +205,7 @@ export function OperatorList({ initialOperators }: OperatorListProps) {
             ].filter(([, v]) => v).map(([label, value]) => (
               <div key={label} className="flex justify-between py-1.5 border-b border-slate-100">
                 <span className="text-muted-foreground font-medium">{label}</span>
-                <span className="text-right max-w-[60%] break-words" title={String(value)}>{String(value)}</span>
+                <span className="text-right max-w-[60%] break-all whitespace-normal" title={String(value)}>{String(value)}</span>
               </div>
             ))}
             <div className="flex justify-between py-1.5 border-b border-slate-100">

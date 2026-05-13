@@ -159,18 +159,18 @@ export function ProviderList({ providers }: ProviderListProps) {
               paginatedProviders.map((p) => (
                 <TableRow key={p.id} onClick={() => setSelectedProvider(p)} className="cursor-pointer hover:bg-slate-50">
                   <TableCell className="font-medium">
-                    <span className="break-words max-w-[250px] block">{p.razonSocial}</span>
+                    <span className="break-all whitespace-normal overflow-hidden max-w-[250px] block">{p.razonSocial}</span>
                   </TableCell>
                   <TableCell className="font-mono text-sm">
-                    <span className="break-words max-w-[180px] block">{p.nit}</span>
+                    <span className="break-all whitespace-normal overflow-hidden max-w-[180px] block">{p.nit}</span>
                   </TableCell>
                   <TableCell>
-                    <span className="break-words max-w-[120px] block">{p.municipio}</span>
+                    <span className="break-all whitespace-normal overflow-hidden max-w-[120px] block">{p.municipio}</span>
                   </TableCell>
                   <TableCell>
                     <div className="text-xs">
-                      <span className="break-words max-w-[250px] block">{p.representanteLegal}</span>
-                      <span className="text-muted-foreground break-words max-w-[250px] block">{p.telefono || p.correo}</span>
+                      <span className="break-all whitespace-normal overflow-hidden max-w-[250px] block">{p.representanteLegal}</span>
+                      <span className="text-muted-foreground break-all whitespace-normal overflow-hidden max-w-[250px] block">{p.telefono || p.correo}</span>
                     </div>
                   </TableCell>
                   <TableCell>

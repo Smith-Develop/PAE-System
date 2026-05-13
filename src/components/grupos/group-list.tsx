@@ -136,13 +136,13 @@ export function GroupList({ initialGroups }: GroupListProps) {
               paginatedGroups.map((g) => (
                 <TableRow key={g.id} className="cursor-pointer hover:bg-slate-50/50 transition-colors" onClick={() => setSelectedItem(g)}>
                   <TableCell className="align-top py-4">
-                    <span className="font-bold text-slate-800 block break-words max-w-[250px]">
+                    <span className="font-bold text-slate-800 block break-all whitespace-normal overflow-hidden max-w-[250px]">
                       {g.name}
                     </span>
                   </TableCell>
                   <TableCell className="align-top py-4">
                     {g.description ? (
-                      <p className="text-sm text-slate-600 line-clamp-3 break-words">
+                      <p className="text-sm text-slate-600 line-clamp-3 break-all whitespace-normal overflow-hidden">
                         {g.description}
                       </p>
                     ) : (
@@ -198,7 +198,7 @@ export function GroupList({ initialGroups }: GroupListProps) {
             </div>
             <div>
               <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Descripción</p>
-              <p className="text-base break-words">{selectedItem?.description || "Sin descripción"}</p>
+              <p className="text-base break-all whitespace-normal overflow-hidden">{selectedItem?.description || "Sin descripción"}</p>
             </div>
             <div>
               <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Ítems asociados</p>

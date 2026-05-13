@@ -89,16 +89,16 @@ export function StockList({ initialProducts }: StockListProps) {
                 paginatedProducts.map((p) => (
                   <TableRow key={p.id} className="hover:bg-slate-50/80 transition-colors cursor-pointer" onClick={() => setSelectedDetailProduct(p)}>
                     <TableCell>
-                      <div className="font-bold text-slate-800 break-words max-w-[250px]">{p.masterProduct?.nombre}</div>
-                      <div className="text-xs text-muted-foreground italic break-words max-w-[250px]">{p.descripcionMarca}</div>
+                      <div className="font-bold text-slate-800 break-all whitespace-normal overflow-hidden max-w-[250px]">{p.masterProduct?.nombre}</div>
+                      <div className="text-xs text-muted-foreground italic break-all whitespace-normal overflow-hidden max-w-[250px]">{p.descripcionMarca}</div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary" className="font-semibold bg-slate-100 text-slate-700">
+                      <Badge variant="secondary" className="font-semibold bg-slate-100 text-slate-700 break-all whitespace-normal">
                         {p.masterProduct?.foodGroup?.name}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="text-sm font-medium text-slate-700 break-words max-w-[250px]">{p.provider?.razonSocial}</div>
+                      <div className="text-sm font-medium text-slate-700 break-all whitespace-normal overflow-hidden max-w-[250px]">{p.provider?.razonSocial}</div>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex flex-col items-end">
@@ -157,7 +157,7 @@ export function StockList({ initialProducts }: StockListProps) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-50 rounded-lg border text-sm">
                 <div>
                   <span className="text-xs text-muted-foreground uppercase">Alimento</span>
-                  <p className="font-bold text-slate-800 break-words">{selectedDetailProduct.masterProduct?.nombre || "—"}</p>
+                  <p className="font-bold text-slate-800 break-all whitespace-normal overflow-hidden">{selectedDetailProduct.masterProduct?.nombre || "—"}</p>
                 </div>
                 <div>
                   <span className="text-xs text-muted-foreground uppercase">Grupo Alimentos</span>
@@ -167,19 +167,19 @@ export function StockList({ initialProducts }: StockListProps) {
                 </div>
                 <div>
                   <span className="text-xs text-muted-foreground uppercase">Descripción / Marca</span>
-                  <p className="font-medium text-slate-700 break-words">{selectedDetailProduct.descripcionMarca}</p>
+                  <p className="font-medium text-slate-700 break-all whitespace-normal overflow-hidden">{selectedDetailProduct.descripcionMarca}</p>
                 </div>
                 <div>
                   <span className="text-xs text-muted-foreground uppercase">Registro Sanitario</span>
-                  <p className="font-medium text-slate-700 break-words">{selectedDetailProduct.registroSanitario || "—"}</p>
+                  <p className="font-medium text-slate-700 break-all whitespace-normal overflow-hidden">{selectedDetailProduct.registroSanitario || "—"}</p>
                 </div>
                 <div>
                   <span className="text-xs text-muted-foreground uppercase">Proveedor</span>
-                  <p className="font-medium text-slate-700 break-words">{selectedDetailProduct.provider?.razonSocial || "—"}</p>
+                  <p className="font-medium text-slate-700 break-all whitespace-normal overflow-hidden">{selectedDetailProduct.provider?.razonSocial || "—"}</p>
                 </div>
                 <div>
                   <span className="text-xs text-muted-foreground uppercase">NIT Proveedor</span>
-                  <p className="font-medium text-slate-700 break-words">{selectedDetailProduct.provider?.nit || "—"}</p>
+                  <p className="font-medium text-slate-700 break-all whitespace-normal overflow-hidden">{selectedDetailProduct.provider?.nit || "—"}</p>
                 </div>
                 <div>
                   <span className="text-xs text-muted-foreground uppercase">Existencias</span>

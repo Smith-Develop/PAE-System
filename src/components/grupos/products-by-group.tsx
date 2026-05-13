@@ -339,14 +339,14 @@ export function ProductsByGroup({ masterProducts, foodGroups }: ProductsByGroupP
                 paginatedProducts.map((p) => (
                   <TableRow key={p.id} className="cursor-pointer hover:bg-slate-50/50 transition-colors" onClick={() => setSelectedItem(p)}>
                     <TableCell className="py-3">
-                      <span className="font-bold text-slate-800 block break-words max-w-[250px]">
+                      <span className="font-bold text-slate-800 block break-all whitespace-normal overflow-hidden max-w-[250px]">
                         {p.nombre}
                       </span>
                     </TableCell>
                     <TableCell className="py-3">
                       <Badge
                         variant="secondary"
-                        className="font-semibold break-words max-w-[200px]"
+                        className="font-semibold break-all whitespace-normal max-w-[200px]"
                       >
                         {p.foodGroup?.name || "—"}
                       </Badge>
@@ -401,7 +401,7 @@ export function ProductsByGroup({ masterProducts, foodGroups }: ProductsByGroupP
           <div className="space-y-4 py-4">
             <div>
               <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Nombre</p>
-              <p className="text-base font-medium break-words">{selectedItem?.nombre}</p>
+              <p className="text-base font-medium break-all whitespace-normal overflow-hidden">{selectedItem?.nombre}</p>
             </div>
             <div>
               <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Unidad de Medida</p>

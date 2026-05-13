@@ -85,7 +85,7 @@ export function ReportTable({ reportData }: ReportTableProps) {
                     {i + 1}
                   </TableCell>
                   {REPORT_COLUMNS.map((col, j) => (
-                    <TableCell key={j} className="whitespace-nowrap max-w-[250px] truncate text-sm px-4 py-2 border-r last:border-r-0" title={String(row[col])}>
+                    <TableCell key={j} className="max-w-[250px] break-all whitespace-normal overflow-hidden text-sm px-4 py-2 border-r last:border-r-0" title={String(row[col])}>
                       {row[col] !== null && row[col] !== undefined ? String(row[col]) : ""}
                     </TableCell>
                   ))}

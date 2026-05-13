@@ -316,8 +316,8 @@ export function SettingsPanel({ user }: SettingsPanelProps) {
                       <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No hay usuarios</TableCell></TableRow>
                     ) : userList.map((u) => (
                       <TableRow key={u.id}>
-                        <TableCell className="font-medium break-words max-w-[250px]">{u.name}</TableCell>
-                        <TableCell className="font-mono text-sm break-words max-w-[250px]">{u.email}</TableCell>
+                        <TableCell className="font-medium break-all whitespace-normal overflow-hidden max-w-[250px]">{u.name}</TableCell>
+                        <TableCell className="font-mono text-sm break-all whitespace-normal overflow-hidden max-w-[250px]">{u.email}</TableCell>
                         <TableCell><Badge variant="outline">{u.role.name}</Badge></TableCell>
                         <TableCell>
                           <Badge variant={u.active ? "secondary" : "destructive"} className="cursor-pointer" onClick={() => handleToggleActive(u)}>
@@ -458,8 +458,8 @@ export function SettingsPanel({ user }: SettingsPanelProps) {
                               {new Date(log.createdAt).toLocaleString("es-CO", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                             </TableCell>
                             <TableCell>
-                              <div className="text-sm font-medium break-words max-w-[250px]">{log.userName}</div>
-                              <div className="text-[10px] text-muted-foreground break-words max-w-[250px]">{log.userEmail}</div>
+                              <div className="text-sm font-medium break-all whitespace-normal overflow-hidden max-w-[250px]">{log.userName}</div>
+                              <div className="text-[10px] text-muted-foreground break-all whitespace-normal overflow-hidden max-w-[250px]">{log.userEmail}</div>
                             </TableCell>
                             <TableCell>
                               <Badge variant={
@@ -469,8 +469,8 @@ export function SettingsPanel({ user }: SettingsPanelProps) {
                                 "secondary"
                               } className="text-[10px]">{log.action}</Badge>
                             </TableCell>
-                            <TableCell className="text-xs break-words max-w-[250px]">{log.entity}</TableCell>
-                            <TableCell className="hidden md:table-cell text-xs text-muted-foreground break-words max-w-[250px]">
+                            <TableCell className="text-xs break-all whitespace-normal overflow-hidden max-w-[250px]">{log.entity}</TableCell>
+                            <TableCell className="hidden md:table-cell text-xs text-muted-foreground break-all whitespace-normal overflow-hidden max-w-[250px]">
                               {log.details || "—"}
                             </TableCell>
                           </TableRow>

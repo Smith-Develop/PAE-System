@@ -200,7 +200,7 @@ export function MasterProductList({
                     onClick={() => setSelectedItem(p)}
                   >
                     <TableCell>
-                      <div className="font-bold text-slate-800 break-words max-w-[250px]">
+                      <div className="font-bold text-slate-800 break-all whitespace-normal overflow-hidden max-w-[250px]">
                         {p.nombre}
                       </div>
                     </TableCell>
@@ -212,7 +212,7 @@ export function MasterProductList({
                     <TableCell>
                       <Badge
                         variant="secondary"
-                        className="font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200"
+                        className="font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 break-all whitespace-normal"
                       >
                         {p.foodGroup?.name || "Sin grupo"}
                       </Badge>
@@ -271,7 +271,7 @@ export function MasterProductList({
                 <div className="space-y-2">
                   {selectedItem.providerProducts.map((pp) => (
                     <div key={pp.id} className="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2 border">
-                      <span className="text-sm font-medium text-slate-700 break-words">{pp.provider?.razonSocial || "Sin proveedor"}</span>
+                      <span className="text-sm font-medium text-slate-700 break-all whitespace-normal overflow-hidden">{pp.provider?.razonSocial || "Sin proveedor"}</span>
                       <span className="text-sm text-slate-500">Stock: {pp.currentStock.toLocaleString("es-CO", { minimumFractionDigits: 1 })}</span>
                     </div>
                   ))}

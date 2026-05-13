@@ -284,7 +284,7 @@ export function MenuList({ menus, dishes }: MenuListProps) {
                             <TableBody>
                               {md.dish.ingredients.map((ing) => (
                                 <TableRow key={ing.id}>
-                                  <TableCell className="text-sm font-medium break-words">
+                                  <TableCell className="text-sm font-medium break-all whitespace-normal overflow-hidden">
                                     {ing.masterProduct?.nombre || "Desconocido"}
                                   </TableCell>
                                   <TableCell className="text-right font-mono text-sm">

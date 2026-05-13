@@ -148,7 +148,7 @@ export function ProductList({ products, masterProducts, providers, foodGroups }:
 
       <div className="rounded-xl border bg-white shadow-lg overflow-hidden">
         <div className="w-full overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
-          <Table className="min-w-[900px]">
+          <Table className="min-w-[650px] table-fixed">
             <TableHeader className="bg-slate-50/80">
               <TableRow className="hover:bg-transparent">
                 <TableHead className="w-[300px] font-bold text-primary py-4">Producto / Marca</TableHead>

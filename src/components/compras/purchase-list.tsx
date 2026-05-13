@@ -138,7 +138,7 @@ export function PurchaseList({ initialPurchases, products, operators }: Purchase
       </div>
 
       <div className="rounded-md border bg-white shadow-sm overflow-x-auto">
-        <Table className="min-w-[800px]">
+        <Table className="min-w-[650px] table-fixed">
           <TableHeader>
             <TableRow>
               <TableHead>Fecha</TableHead>

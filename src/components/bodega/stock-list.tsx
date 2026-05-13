@@ -68,7 +68,7 @@ export function StockList({ initialProducts }: StockListProps) {
 
       <div className="rounded-xl border bg-white shadow-lg overflow-hidden">
         <div className="w-full overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
-          <Table className="min-w-[700px]">
+          <Table className="min-w-[550px] table-fixed">
             <TableHeader className="bg-slate-50/80">
               <TableRow className="hover:bg-transparent">
                 <TableHead className="font-bold text-primary py-4">Producto / Alimento</TableHead>
@@ -157,7 +157,7 @@ export function StockList({ initialProducts }: StockListProps) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-50 rounded-lg border text-sm">
                 <div>
                   <span className="text-xs text-muted-foreground uppercase">Alimento</span>
-                  <p className="font-bold text-slate-800">{selectedDetailProduct.masterProduct?.nombre || "—"}</p>
+                  <p className="font-bold text-slate-800 break-words">{selectedDetailProduct.masterProduct?.nombre || "—"}</p>
                 </div>
                 <div>
                   <span className="text-xs text-muted-foreground uppercase">Grupo Alimentos</span>
@@ -167,19 +167,19 @@ export function StockList({ initialProducts }: StockListProps) {
                 </div>
                 <div>
                   <span className="text-xs text-muted-foreground uppercase">Descripción / Marca</span>
-                  <p className="font-medium text-slate-700">{selectedDetailProduct.descripcionMarca}</p>
+                  <p className="font-medium text-slate-700 break-words">{selectedDetailProduct.descripcionMarca}</p>
                 </div>
                 <div>
                   <span className="text-xs text-muted-foreground uppercase">Registro Sanitario</span>
-                  <p className="font-medium text-slate-700">{selectedDetailProduct.registroSanitario || "—"}</p>
+                  <p className="font-medium text-slate-700 break-words">{selectedDetailProduct.registroSanitario || "—"}</p>
                 </div>
                 <div>
                   <span className="text-xs text-muted-foreground uppercase">Proveedor</span>
-                  <p className="font-medium text-slate-700">{selectedDetailProduct.provider?.razonSocial || "—"}</p>
+                  <p className="font-medium text-slate-700 break-words">{selectedDetailProduct.provider?.razonSocial || "—"}</p>
                 </div>
                 <div>
                   <span className="text-xs text-muted-foreground uppercase">NIT Proveedor</span>
-                  <p className="font-medium text-slate-700">{selectedDetailProduct.provider?.nit || "—"}</p>
+                  <p className="font-medium text-slate-700 break-words">{selectedDetailProduct.provider?.nit || "—"}</p>
                 </div>
                 <div>
                   <span className="text-xs text-muted-foreground uppercase">Existencias</span>

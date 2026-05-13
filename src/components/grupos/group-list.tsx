@@ -116,7 +116,7 @@ export function GroupList({ initialGroups }: GroupListProps) {
 
       <div className="rounded-xl border bg-white shadow-lg overflow-hidden">
         <div className="w-full overflow-x-auto">
-          <Table className="min-w-[700px]">
+          <Table className="min-w-[400px] table-fixed">
           <TableHeader className="bg-slate-50/80">
             <TableRow>
               <TableHead className="font-bold text-primary py-4 w-[30%]">Nombre del Grupo</TableHead>
@@ -193,7 +193,7 @@ export function GroupList({ initialGroups }: GroupListProps) {
       <Pagination currentPage={page} totalPages={totalPages} totalItems={filteredGroups.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
 
       <Dialog open={!!selectedItem} onOpenChange={(open) => { if (!open) setSelectedItem(null); }}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="w-[95vw] max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Detalle del Grupo Alimentario</DialogTitle>
           </DialogHeader>
@@ -204,7 +204,7 @@ export function GroupList({ initialGroups }: GroupListProps) {
             </div>
             <div>
               <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Descripción</p>
-              <p className="text-base">{selectedItem?.description || "Sin descripción"}</p>
+              <p className="text-base break-words">{selectedItem?.description || "Sin descripción"}</p>
             </div>
             <div>
               <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Ítems asociados</p>

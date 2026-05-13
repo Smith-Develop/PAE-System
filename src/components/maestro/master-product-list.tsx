@@ -156,7 +156,7 @@ export function MasterProductList({
 
       <div className="rounded-xl border bg-white shadow-lg overflow-hidden">
         <div className="w-full overflow-x-auto">
-          <Table className="min-w-[700px]">
+          <Table className="min-w-[400px] table-fixed">
             <TableHeader className="bg-slate-50/80">
               <TableRow className="hover:bg-transparent">
                 <TableHead className="font-bold text-primary py-4">
@@ -248,7 +248,7 @@ export function MasterProductList({
       <Pagination currentPage={page} totalPages={totalPages} totalItems={filteredProducts.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
 
       <Dialog open={!!selectedItem} onOpenChange={(open) => { if (!open) setSelectedItem(null); }}>
-        <DialogContent className="sm:max-w-[550px]">
+        <DialogContent className="w-[95vw] max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Detalle del Producto del Catálogo</DialogTitle>
           </DialogHeader>
@@ -271,7 +271,7 @@ export function MasterProductList({
                 <div className="space-y-2">
                   {selectedItem.providerProducts.map((pp) => (
                     <div key={pp.id} className="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2 border">
-                      <span className="text-sm font-medium text-slate-700">{pp.provider?.razonSocial || "Sin proveedor"}</span>
+                      <span className="text-sm font-medium text-slate-700 break-words">{pp.provider?.razonSocial || "Sin proveedor"}</span>
                       <span className="text-sm text-slate-500">Stock: {pp.currentStock.toLocaleString("es-CO", { minimumFractionDigits: 1 })}</span>
                     </div>
                   ))}

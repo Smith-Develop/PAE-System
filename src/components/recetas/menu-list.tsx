@@ -273,7 +273,8 @@ export function MenuList({ menus, dishes }: MenuListProps) {
                           </Badge>
                         </div>
                         {md.dish?.ingredients && md.dish.ingredients.length > 0 && (
-                          <Table>
+                          <div className="overflow-x-auto">
+                            <Table className="table-fixed w-full">
                             <TableHeader>
                               <TableRow className="bg-slate-50">
                                 <TableHead className="text-xs">Producto</TableHead>
@@ -283,7 +284,7 @@ export function MenuList({ menus, dishes }: MenuListProps) {
                             <TableBody>
                               {md.dish.ingredients.map((ing) => (
                                 <TableRow key={ing.id}>
-                                  <TableCell className="text-sm font-medium">
+                                  <TableCell className="text-sm font-medium break-words">
                                     {ing.masterProduct?.nombre || "Desconocido"}
                                   </TableCell>
                                   <TableCell className="text-right font-mono text-sm">
@@ -293,6 +294,7 @@ export function MenuList({ menus, dishes }: MenuListProps) {
                               ))}
                             </TableBody>
                           </Table>
+                          </div>
                         )}
                       </div>
                     ))}

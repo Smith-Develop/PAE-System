@@ -720,7 +720,7 @@ export function OrderCalculator({
               </div>
             ) : (
               <div className="w-full overflow-x-auto">
-                <Table className="min-w-[700px]">
+                <Table className="min-w-[600px] table-fixed">
                   <TableHeader className="bg-muted/20 sticky top-0 z-10">
                     <TableRow>
                       <TableHead className="font-semibold text-slate-700">

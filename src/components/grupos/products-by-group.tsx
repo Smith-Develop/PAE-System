@@ -309,7 +309,7 @@ export function ProductsByGroup({ masterProducts, foodGroups }: ProductsByGroupP
 
       <div className="rounded-xl border bg-white shadow-lg overflow-hidden">
         <div className="w-full overflow-x-auto">
-          <Table className="min-w-[700px]">
+          <Table className="min-w-[400px] table-fixed">
             <TableHeader className="bg-slate-50/80">
               <TableRow>
                 <TableHead className="font-bold text-primary py-4 w-[30%]">Nombre</TableHead>
@@ -398,14 +398,14 @@ export function ProductsByGroup({ masterProducts, foodGroups }: ProductsByGroupP
       </div>
 
       <Dialog open={!!selectedItem} onOpenChange={(open) => { if (!open) setSelectedItem(null); }}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="w-[95vw] max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Detalle del Producto</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
               <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Nombre</p>
-              <p className="text-base font-medium">{selectedItem?.nombre}</p>
+              <p className="text-base font-medium break-words">{selectedItem?.nombre}</p>
             </div>
             <div>
               <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Unidad de Medida</p>

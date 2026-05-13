@@ -137,7 +137,7 @@ export function ProviderList({ providers }: ProviderListProps) {
       </div>
 
       <div className="rounded-md border bg-white shadow-sm overflow-x-auto">
-        <Table className="min-w-[700px]">
+        <Table className="min-w-[600px] table-fixed">
           <TableHeader>
             <TableRow>
               <TableHead>Razón Social</TableHead>

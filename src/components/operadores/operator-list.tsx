@@ -131,7 +131,7 @@ export function OperatorList({ initialOperators }: OperatorListProps) {
       </div>
 
       <div className="rounded-md border bg-white shadow-sm overflow-x-auto">
-        <Table className="min-w-[700px]">
+        <Table className="min-w-[550px] table-fixed">
           <TableHeader>
             <TableRow>
               <TableHead>Operador</TableHead>
@@ -205,7 +205,7 @@ export function OperatorList({ initialOperators }: OperatorListProps) {
             ].filter(([, v]) => v).map(([label, value]) => (
               <div key={label} className="flex justify-between py-1.5 border-b border-slate-100">
                 <span className="text-muted-foreground font-medium">{label}</span>
-                <span className="text-right max-w-[60%] truncate" title={String(value)}>{String(value)}</span>
+                <span className="text-right max-w-[60%] break-words" title={String(value)}>{String(value)}</span>
               </div>
             ))}
             <div className="flex justify-between py-1.5 border-b border-slate-100">

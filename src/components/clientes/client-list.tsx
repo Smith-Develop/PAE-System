@@ -137,7 +137,7 @@ export function ClientList({ clients }: ClientListProps) {
       </div>
 
       <div className="rounded-xl border bg-white shadow-lg overflow-x-auto">
-        <Table className="min-w-[600px]">
+        <Table className="min-w-[500px] table-fixed">
           <TableHeader className="bg-slate-50/80">
             <TableRow className="hover:bg-transparent">
               <TableHead className="font-bold text-primary py-4">

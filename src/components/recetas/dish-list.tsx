@@ -145,7 +145,7 @@ export function DishList({ dishes, masterProducts, components }: DishListProps) 
 
       <div className="rounded-xl border bg-white shadow-lg overflow-hidden">
         <div className="w-full overflow-x-auto">
-        <Table className="min-w-[700px]">
+        <Table className="min-w-[400px] table-fixed">
           <TableHeader className="bg-slate-50/80">
             <TableRow className="hover:bg-transparent">
               <TableHead className="font-bold text-primary py-4">
@@ -302,7 +302,8 @@ export function DishList({ dishes, masterProducts, components }: DishListProps) 
                 {selectedDish.ingredients.length === 0 ? (
                   <p className="text-sm text-muted-foreground">Sin ingredientes registrados.</p>
                 ) : (
-                  <Table>
+                  <div className="overflow-x-auto">
+                    <Table className="table-fixed w-full">
                     <TableHeader>
                       <TableRow className="bg-slate-50">
                         <TableHead className="text-xs">Producto</TableHead>
@@ -312,7 +313,7 @@ export function DishList({ dishes, masterProducts, components }: DishListProps) 
                     <TableBody>
                       {selectedDish.ingredients.map((ing) => (
                         <TableRow key={ing.id}>
-                          <TableCell className="text-sm font-medium">
+                          <TableCell className="text-sm font-medium break-words">
                             {ing.masterProduct?.nombre || "Desconocido"}
                           </TableCell>
                           <TableCell className="text-right font-mono text-sm">
@@ -322,6 +323,7 @@ export function DishList({ dishes, masterProducts, components }: DishListProps) 
                       ))}
                     </TableBody>
                   </Table>
+                  </div>
                 )}
               </div>
             </div>

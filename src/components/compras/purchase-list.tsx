@@ -47,9 +47,6 @@ export function PurchaseList({ initialPurchases, products: initialProducts, oper
   const [scannedItems, setScannedItems] = useState<any[]>([]);
   const [showScanner, setShowScanner] = useState(false);
   const [showMapper, setShowMapper] = useState(false);
-  const [invoiceOpId, setInvoiceOpId] = useState("");
-  const [invoiceClientId, setInvoiceClientId] = useState("");
-  const [invoiceFecha, setInvoiceFecha] = useState("");
   const [aiEnabled, setAiEnabled] = useState(false);
 
   useEffect(() => {
@@ -170,9 +167,6 @@ export function PurchaseList({ initialPurchases, products: initialProducts, oper
             <InvoiceScanner
               onItemsExtracted={(items) => {
                 setScannedItems(items);
-                setInvoiceOpId("");
-                setInvoiceClientId("");
-                setInvoiceFecha(new Date().toISOString().slice(0, 10));
                 setShowMapper(true);
               }}
             />
@@ -180,9 +174,6 @@ export function PurchaseList({ initialPurchases, products: initialProducts, oper
           {showMapper && scannedItems.length > 0 && (
             <InvoiceMapper
               items={scannedItems}
-              operatorId={invoiceOpId}
-              clientId={invoiceClientId}
-              fechaCompra={invoiceFecha}
               onSaved={() => {
                 setScannedItems([]);
                 setShowMapper(false);

@@ -1,79 +1,85 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Save } from "lucide-react";
+import { Save, Building, Users, Calendar } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Combobox } from "@/components/ui/combobox";
-import { Product, Provider } from "@/types";
+import { Product, Provider, Operator, Client } from "@/types";
 
 interface InvoiceMapperProps {
   items: { nombre: string; cantidad: number; precioUnitario: number }[];
-  operatorId: string;
-  clientId: string;
-  fechaCompra: Date | string;
   onSaved: () => void;
   onCancel: () => void;
 }
 
 interface RowState {
   productId: string;
-  providerId: string;
 }
 
-export function InvoiceMapper({
-  items,
-  operatorId,
-  clientId,
-  fechaCompra,
-  onSaved,
-  onCancel,
-}: InvoiceMapperProps) {
+export function InvoiceMapper({ items, onSaved, onCancel }: InvoiceMapperProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [providers, setProviders] = useState<Provider[]>([]);
+  const [operators, setOperators] = useState<Operator[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
   const [rows, setRows] = useState<RowState[]>([]);
+  const [editableItems, setEditableItems] = useState(items);
   const [isSaving, setIsSaving] = useState(false);
+  const [operatorId, setOperatorId] = useState("");
+  const [clientId, setClientId] = useState("");
+  const [fechaCompra, setFechaCompra] = useState(new Date().toISOString().slice(0, 10));
 
   useEffect(() => {
     Promise.all([
       fetch("/api/products").then((r) => r.json()),
       fetch("/api/providers").then((r) => r.json()),
-    ]).then(([p, prov]) => {
+      fetch("/api/operators").then((r) => r.json()),
+      fetch("/api/clients").then((r) => r.json()),
+    ]).then(([p, prov, op, cl]) => {
       setProducts(p);
       setProviders(prov);
-      setRows(items.map(() => ({ productId: "", providerId: "" })));
+      setOperators(op);
+      setClients(cl);
+      setRows(items.map(() => ({ productId: "" })));
     }).catch(() => {
-      toast.error("Error al cargar catálogo de productos y proveedores");
+      toast.error("Error al cargar datos");
     });
   }, [items]);
 
-  const updateRow = (index: number, field: keyof RowState, value: string) => {
+  const updateRow = (index: number, productId: string) => {
     setRows((prev) => {
       const next = [...prev];
-      if (field === "productId") {
-        const product = products.find((p) => p.id === value);
-        next[index] = {
-          productId: value,
-          providerId: product?.providerId || next[index].providerId,
-        };
-      } else {
-        next[index] = { ...next[index], [field]: value };
-      }
+      next[index] = { productId };
+      return next;
+    });
+  };
+
+  const updateQuantity = (index: number, value: string) => {
+    setEditableItems((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], cantidad: parseFloat(value) || 0 };
+      return next;
+    });
+  };
+
+  const updatePrice = (index: number, value: string) => {
+    setEditableItems((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], precioUnitario: parseFloat(value) || 0 };
       return next;
     });
   };
 
   const handleSave = async () => {
+    if (!operatorId) { toast.error("Selecciona un operador"); return; }
+    if (!fechaCompra) { toast.error("Selecciona una fecha de compra"); return; }
+
     const incompleteRows = rows.some((r) => !r.productId);
     if (incompleteRows) {
       toast.error("Selecciona un producto del catálogo para cada ítem");
@@ -85,8 +91,8 @@ export function InvoiceMapper({
       const payload = {
         operatorId,
         clientId: clientId || null,
-        fechaCompra: typeof fechaCompra === "string" ? fechaCompra : fechaCompra.toISOString(),
-        items: items.map((item, i) => ({
+        fechaCompra,
+        items: editableItems.map((item, i) => ({
           productId: rows[i].productId,
           precioUnitario: item.precioUnitario,
           cantidadComprada: item.cantidad,
@@ -108,6 +114,7 @@ export function InvoiceMapper({
       const data = await res.json();
       toast.success(`${data.count} compras registradas`);
       localStorage.removeItem("invoice-items");
+      localStorage.removeItem("invoice-pending");
       onSaved();
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : "Error al guardar la factura");
@@ -117,76 +124,92 @@ export function InvoiceMapper({
   };
 
   const productOptions = products.map((p) => ({
-    label: `${p.masterProduct?.nombre} (${p.provider?.razonSocial} - ${p.descripcionMarca})`,
+    label: `${p.masterProduct?.nombre || "?"} (${p.provider?.razonSocial || "?"} - ${p.descripcionMarca})`,
     value: p.id,
   }));
 
-  const providerOptions = providers.map((p) => ({
-    label: `${p.razonSocial} (${p.nit})`,
-    value: p.id,
-  }));
-
-  const formatter = new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  });
+  const formatter = new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 });
 
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg font-bold">
-          Items de la Factura
-        </CardTitle>
+        <CardTitle className="flex items-center gap-2 text-lg font-bold">Items de la Factura</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Datos de la factura */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 bg-blue-50 rounded-lg border border-blue-100">
+          <div className="space-y-1">
+            <p className="text-[10px] uppercase font-semibold text-blue-600 flex items-center gap-1"><Building className="h-3 w-3" /> Operador *</p>
+            <Combobox
+              options={operators.map((o) => ({ label: o.nombreOperador, value: o.id }))}
+              value={operatorId}
+              onValueChange={setOperatorId}
+              placeholder="Seleccionar..."
+            />
+          </div>
+          <div className="space-y-1">
+            <p className="text-[10px] uppercase font-semibold text-blue-600 flex items-center gap-1"><Users className="h-3 w-3" /> Cliente</p>
+            <Combobox
+              options={clients.map((c) => ({ label: c.nombre, value: c.id }))}
+              value={clientId}
+              onValueChange={setClientId}
+              placeholder="Opcional..."
+            />
+          </div>
+          <div className="space-y-1">
+            <p className="text-[10px] uppercase font-semibold text-blue-600 flex items-center gap-1"><Calendar className="h-3 w-3" /> Fecha *</p>
+            <Input type="date" value={fechaCompra} onChange={(e) => setFechaCompra(e.target.value)} className="h-9 bg-white" />
+          </div>
+        </div>
+
+        {/* Tabla de items */}
         <div className="rounded-md border bg-white shadow-sm overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Producto</TableHead>
-                <TableHead className="text-right font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Cantidad</TableHead>
-                <TableHead className="text-right font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Precio Unitario</TableHead>
+                <TableHead className="text-right font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight w-[80px]">Cant.</TableHead>
+                <TableHead className="text-right font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight w-[100px]">P.Unit</TableHead>
                 <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Catálogo</TableHead>
-                <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Proveedor</TableHead>
-                <TableHead className="text-right font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Valor Total</TableHead>
+                <TableHead className="text-right font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight w-[120px]">Valor Total</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {items.length === 0 ? (
+              {editableItems.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    No hay ítems para mapear.
-                  </TableCell>
+                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No hay ítems para mapear.</TableCell>
                 </TableRow>
               ) : (
-                items.map((item, i) => {
+                editableItems.map((item, i) => {
                   const valorTotal = item.cantidad * item.precioUnitario;
                   return (
                     <TableRow key={i}>
-                      <TableCell className="font-medium text-xs">{item.nombre}</TableCell>
-                      <TableCell className="text-right text-xs">{item.cantidad}</TableCell>
-                      <TableCell className="text-right text-xs font-mono">
-                        {formatter.format(item.precioUnitario)}
+                      <TableCell className="font-medium text-xs break-all">{item.nombre}</TableCell>
+                      <TableCell className="text-right">
+                        <Input
+                          type="number" min="0" step="0.01"
+                          value={item.cantidad || ""}
+                          onChange={(e) => updateQuantity(i, e.target.value)}
+                          className="h-7 w-[70px] text-xs text-right"
+                        />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Input
+                          type="number" min="0" step="0.01"
+                          value={item.precioUnitario || ""}
+                          onChange={(e) => updatePrice(i, e.target.value)}
+                          className="h-7 w-[90px] text-xs text-right font-mono"
+                        />
                       </TableCell>
                       <TableCell>
                         <Combobox
                           options={productOptions}
                           value={rows[i]?.productId || ""}
-                          onValueChange={(v) => updateRow(i, "productId", v)}
+                          onValueChange={(v) => updateRow(i, v)}
                           placeholder="Seleccionar..."
                         />
                       </TableCell>
-                      <TableCell>
-                        <Combobox
-                          options={providerOptions}
-                          value={rows[i]?.providerId || ""}
-                          onValueChange={(v) => updateRow(i, "providerId", v)}
-                          placeholder="Seleccionar..."
-                        />
-                      </TableCell>
-                      <TableCell className="text-right font-mono text-xs">
+                      <TableCell className="text-right font-mono text-xs font-bold text-primary">
                         {formatter.format(valorTotal)}
                       </TableCell>
                     </TableRow>
@@ -197,24 +220,11 @@ export function InvoiceMapper({
           </Table>
         </div>
 
-        <div className="flex justify-end pt-4 border-t">
-          <Button
-            onClick={handleSave}
-            disabled={isSaving || items.length === 0}
-            className="px-10 h-12 font-bold bg-blue-600 hover:bg-blue-700 text-white uppercase tracking-widest text-xs shadow-lg"
-          >
-            {isSaving ? (
-              "Guardando..."
-            ) : (
-              <>
-                <Save className="mr-2 h-4 w-4" />
-                Guardar Factura Completa
-              </>
-            )}
+        <div className="flex justify-end gap-2 pt-4 border-t">
+          <Button onClick={handleSave} disabled={isSaving || editableItems.length === 0} className="px-10 h-11 font-bold bg-blue-600 hover:bg-blue-700 text-white uppercase tracking-widest text-xs">
+            {isSaving ? "Guardando..." : <><Save className="mr-2 h-4 w-4" /> Guardar Factura Completa</>}
           </Button>
-          <Button variant="outline" onClick={onCancel} disabled={isSaving}>
-            Cancelar
-          </Button>
+          <Button variant="outline" onClick={onCancel} disabled={isSaving} className="h-11">Cancelar</Button>
         </div>
       </CardContent>
     </Card>

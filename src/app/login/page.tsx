@@ -44,7 +44,7 @@ export default function LoginPage() {
         toast.error("Credenciales inválidas");
         setIsLoading(false);
       } else {
-        router.push("/maestro");
+        router.push("/");
       }
     } catch {
       toast.error("Ocurrió un error al iniciar sesión");

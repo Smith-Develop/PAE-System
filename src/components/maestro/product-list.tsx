@@ -44,6 +44,7 @@ export function ProductList({ products, masterProducts, providers, foodGroups }:
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
+  const [selectedItem, setSelectedItem] = useState<Product | null>(null);
 
   const filteredProducts = products.filter(
     (p) =>
@@ -171,9 +172,9 @@ export function ProductList({ products, masterProducts, providers, foodGroups }:
                 </TableRow>
               ) : (
                 paginatedProducts.map((p) => (
-                  <TableRow key={p.id} className="hover:bg-slate-50/80 transition-colors">
+                  <TableRow key={p.id} className="cursor-pointer hover:bg-slate-50/80 transition-colors" onClick={() => setSelectedItem(p)}>
                     <TableCell>
-                      <div className="font-bold text-slate-800">{p.descripcionMarca}</div>
+                      <div className="font-bold text-slate-800 truncate max-w-[280px]" title={p.descripcionMarca}>{p.descripcionMarca}</div>
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary" className="font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">
@@ -181,11 +182,11 @@ export function ProductList({ products, masterProducts, providers, foodGroups }:
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="text-sm font-medium text-slate-700">{p.provider?.razonSocial}</div>
+                      <div className="text-sm font-medium text-slate-700 truncate max-w-[200px]" title={p.provider?.razonSocial}>{p.provider?.razonSocial}</div>
                       <div className="text-[10px] text-muted-foreground uppercase tracking-tight">NIT: {p.provider?.nit}</div>
                     </TableCell>
                     <TableCell>
-                      <code className="text-[11px] bg-slate-100 px-2 py-0.5 rounded font-mono border border-slate-200">
+                      <code className="text-[11px] bg-slate-100 px-2 py-0.5 rounded font-mono border border-slate-200 truncate max-w-[120px] block" title={p.registroSanitario}>
                         {p.registroSanitario}
                       </code>
                     </TableCell>
@@ -204,10 +205,10 @@ export function ProductList({ products, masterProducts, providers, foodGroups }:
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => openEditModal(p)} className="h-9 w-9 text-primary hover:bg-primary/10">
+                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); openEditModal(p); }} className="h-9 w-9 text-primary hover:bg-primary/10">
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(p.id)} className="h-9 w-9 text-destructive hover:bg-destructive/10">
+                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleDelete(p.id); }} className="h-9 w-9 text-destructive hover:bg-destructive/10">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -221,6 +222,64 @@ export function ProductList({ products, masterProducts, providers, foodGroups }:
       </div>
 
       <Pagination currentPage={page} totalPages={totalPages} totalItems={filteredProducts.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
+
+      <Dialog open={!!selectedItem} onOpenChange={(open) => { if (!open) setSelectedItem(null); }}>
+        <DialogContent className="sm:max-w-[550px]">
+          <DialogHeader>
+            <DialogTitle>Detalle del Producto</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Producto Maestro</p>
+                <p className="text-base font-medium">{selectedItem?.masterProduct?.nombre || "—"}</p>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Unidad</p>
+                <code className="text-sm bg-slate-100 px-2 py-0.5 rounded font-mono border border-slate-200">{selectedItem?.masterProduct?.unidadMedida || "—"}</code>
+              </div>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Grupo Alimentario</p>
+              <Badge variant="secondary" className="font-semibold">{selectedItem?.masterProduct?.foodGroup?.name || "Sin grupo"}</Badge>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Proveedor</p>
+              <p className="text-sm font-medium text-slate-700">{selectedItem?.provider?.razonSocial || "—"}</p>
+              <p className="text-xs text-muted-foreground">NIT: {selectedItem?.provider?.nit || "—"}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Descripción y Marca</p>
+                <p className="text-base">{selectedItem?.descripcionMarca}</p>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Registro Sanitario</p>
+                <p className="text-sm">{selectedItem?.registroSanitario || "—"}</p>
+              </div>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Stock Actual</p>
+              <span className={cn(
+                "font-bold text-lg",
+                (selectedItem?.currentStock ?? 0) <= 0 ? "text-destructive" : "text-success"
+              )}>
+                {selectedItem?.currentStock.toLocaleString?.("es-CO", { minimumFractionDigits: 1 }) ?? "0.0"}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Creado</p>
+                <p className="text-xs text-muted-foreground">{selectedItem?.createdAt ? new Date(selectedItem.createdAt).toLocaleDateString("es-CO", { dateStyle: "long" }) : "—"}</p>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Actualizado</p>
+                <p className="text-xs text-muted-foreground">{selectedItem?.updatedAt ? new Date(selectedItem.updatedAt).toLocaleDateString("es-CO", { dateStyle: "long" }) : "—"}</p>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

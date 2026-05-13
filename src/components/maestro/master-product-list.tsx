@@ -46,6 +46,7 @@ export function MasterProductList({
   );
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
+  const [selectedItem, setSelectedItem] = useState<MasterProduct | null>(null);
 
   const filteredProducts = masterProducts.filter(
     (p) =>
@@ -155,7 +156,7 @@ export function MasterProductList({
 
       <div className="rounded-xl border bg-white shadow-lg overflow-hidden">
         <div className="w-full overflow-x-auto">
-          <Table>
+          <Table className="min-w-[700px]">
             <TableHeader className="bg-slate-50/80">
               <TableRow className="hover:bg-transparent">
                 <TableHead className="font-bold text-primary py-4">
@@ -195,10 +196,11 @@ export function MasterProductList({
                 paginatedProducts.map((p) => (
                   <TableRow
                     key={p.id}
-                    className="hover:bg-slate-50/80 transition-colors"
+                    className="cursor-pointer hover:bg-slate-50/80 transition-colors"
+                    onClick={() => setSelectedItem(p)}
                   >
                     <TableCell>
-                      <div className="font-bold text-slate-800">
+                      <div className="font-bold text-slate-800 truncate max-w-[280px]" title={p.nombre}>
                         {p.nombre}
                       </div>
                     </TableCell>
@@ -220,7 +222,7 @@ export function MasterProductList({
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => openEditModal(p)}
+                          onClick={(e) => { e.stopPropagation(); openEditModal(p); }}
                           className="h-9 w-9 text-primary hover:bg-primary/10"
                         >
                           <Edit className="h-4 w-4" />
@@ -228,7 +230,7 @@ export function MasterProductList({
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleDelete(p.id)}
+                          onClick={(e) => { e.stopPropagation(); handleDelete(p.id); }}
                           className="h-9 w-9 text-destructive hover:bg-destructive/10"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -244,6 +246,44 @@ export function MasterProductList({
       </div>
 
       <Pagination currentPage={page} totalPages={totalPages} totalItems={filteredProducts.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
+
+      <Dialog open={!!selectedItem} onOpenChange={(open) => { if (!open) setSelectedItem(null); }}>
+        <DialogContent className="sm:max-w-[550px]">
+          <DialogHeader>
+            <DialogTitle>Detalle del Producto del Catálogo</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Nombre</p>
+              <p className="text-base font-medium">{selectedItem?.nombre}</p>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Unidad de Medida</p>
+              <code className="text-sm bg-slate-100 px-2 py-0.5 rounded font-mono border border-slate-200">{selectedItem?.unidadMedida}</code>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Grupo Alimentario</p>
+              <Badge variant="secondary" className="font-semibold">{selectedItem?.foodGroup?.name || "Sin grupo"}</Badge>
+            </div>
+            {selectedItem?.providerProducts && selectedItem.providerProducts.length > 0 && (
+              <div>
+                <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">Productos Vinculados por Proveedor</p>
+                <div className="space-y-2">
+                  {selectedItem.providerProducts.map((pp) => (
+                    <div key={pp.id} className="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2 border">
+                      <span className="text-sm font-medium text-slate-700">{pp.provider?.razonSocial || "Sin proveedor"}</span>
+                      <span className="text-sm text-slate-500">Stock: {pp.currentStock.toLocaleString("es-CO", { minimumFractionDigits: 1 })}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {(!selectedItem?.providerProducts || selectedItem.providerProducts.length === 0) && (
+              <p className="text-sm text-muted-foreground italic">Sin productos vinculados a proveedores</p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

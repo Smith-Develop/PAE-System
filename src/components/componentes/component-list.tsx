@@ -58,6 +58,8 @@ export function ComponentList({ components }: ComponentListProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingComponent, setEditingComponent] =
     useState<ComponentWithCount | null>(null);
+  const [selectedComponent, setSelectedComponent] =
+    useState<ComponentWithCount | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
 
@@ -201,8 +203,8 @@ export function ComponentList({ components }: ComponentListProps) {
         </Dialog>
       </div>
 
-      <div className="rounded-xl border bg-white shadow-lg overflow-hidden">
-        <Table>
+      <div className="rounded-xl border bg-white shadow-lg overflow-x-auto">
+        <Table className="min-w-[500px]">
           <TableHeader className="bg-slate-50/80">
             <TableRow className="hover:bg-transparent">
               <TableHead className="font-bold text-primary py-4 w-full">
@@ -238,12 +240,11 @@ export function ComponentList({ components }: ComponentListProps) {
               paginatedComponents.map((c) => (
                 <TableRow
                   key={c.id}
-                  className="hover:bg-slate-50/80 transition-colors"
+                  onClick={() => setSelectedComponent(c)}
+                  className="cursor-pointer hover:bg-slate-50/80 transition-colors"
                 >
                   <TableCell>
-                    <span className="font-bold text-slate-800 text-lg">
-                      {c.name}
-                    </span>
+                    <span className="font-bold text-slate-800 text-lg truncate max-w-[300px] block" title={c.name}>{c.name}</span>
                   </TableCell>
                   <TableCell className="text-center">
                     <Badge variant="secondary" className="font-mono">
@@ -255,7 +256,7 @@ export function ComponentList({ components }: ComponentListProps) {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => openEditModal(c)}
+                        onClick={(e) => { e.stopPropagation(); openEditModal(c); }}
                         className="h-9 w-9 text-primary hover:bg-primary/10"
                       >
                         <Edit className="h-4 w-4" />
@@ -263,7 +264,7 @@ export function ComponentList({ components }: ComponentListProps) {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleDelete(c.id)}
+                        onClick={(e) => { e.stopPropagation(); handleDelete(c.id); }}
                         className="h-9 w-9 text-destructive hover:bg-destructive/10"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -277,6 +278,24 @@ export function ComponentList({ components }: ComponentListProps) {
         </Table>
       </div>
       <Pagination currentPage={page} totalPages={totalPages} totalItems={components.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
+
+      <Dialog open={selectedComponent !== null} onOpenChange={(open) => { if (!open) setSelectedComponent(null); }}>
+        <DialogContent className="w-[95vw] max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">{selectedComponent?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-1 text-sm py-2">
+            <div className="flex justify-between py-1.5 border-b border-slate-100">
+              <span className="text-muted-foreground font-medium">Nombre</span>
+              <span className="text-right max-w-[60%] truncate" title={selectedComponent?.name}>{selectedComponent?.name}</span>
+            </div>
+            <div className="flex justify-between py-1.5">
+              <span className="text-muted-foreground font-medium">Platos asociados</span>
+              <Badge variant="secondary" className="font-mono">{selectedComponent?._count?.dishes || 0}</Badge>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

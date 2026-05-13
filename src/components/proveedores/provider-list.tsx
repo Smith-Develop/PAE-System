@@ -38,6 +38,7 @@ export function ProviderList({ providers }: ProviderListProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingProvider, setEditingProvider] = useState<Provider | null>(null);
+  const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
 
@@ -135,8 +136,8 @@ export function ProviderList({ providers }: ProviderListProps) {
         </Dialog>
       </div>
 
-      <div className="rounded-md border bg-white shadow-sm">
-        <Table>
+      <div className="rounded-md border bg-white shadow-sm overflow-x-auto">
+        <Table className="min-w-[700px]">
           <TableHeader>
             <TableRow>
               <TableHead>Razón Social</TableHead>
@@ -156,14 +157,20 @@ export function ProviderList({ providers }: ProviderListProps) {
               </TableRow>
             ) : (
               paginatedProviders.map((p) => (
-                <TableRow key={p.id}>
-                  <TableCell className="font-medium">{p.razonSocial}</TableCell>
-                  <TableCell className="font-mono text-sm">{p.nit}</TableCell>
-                  <TableCell>{p.municipio}</TableCell>
+                <TableRow key={p.id} onClick={() => setSelectedProvider(p)} className="cursor-pointer hover:bg-slate-50">
+                  <TableCell className="font-medium">
+                    <span className="truncate max-w-[200px] block" title={p.razonSocial}>{p.razonSocial}</span>
+                  </TableCell>
+                  <TableCell className="font-mono text-sm">
+                    <span className="truncate max-w-[120px] block" title={p.nit}>{p.nit}</span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="truncate max-w-[120px] block" title={p.municipio}>{p.municipio}</span>
+                  </TableCell>
                   <TableCell>
                     <div className="text-xs">
-                      {p.representanteLegal}<br/>
-                      <span className="text-muted-foreground">{p.telefono || p.correo}</span>
+                      <span className="truncate max-w-[150px] block" title={p.representanteLegal}>{p.representanteLegal}</span>
+                      <span className="text-muted-foreground truncate max-w-[150px] block" title={p.telefono || p.correo || ""}>{p.telefono || p.correo}</span>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -174,10 +181,10 @@ export function ProviderList({ providers }: ProviderListProps) {
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => openEditModal(p)}>
+                    <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); openEditModal(p); }}>
                       <Edit className="h-4 w-4 text-primary" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(p.id)}>
+                    <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleDelete(p.id); }}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </TableCell>
@@ -188,6 +195,50 @@ export function ProviderList({ providers }: ProviderListProps) {
         </Table>
       </div>
       <Pagination currentPage={page} totalPages={totalPages} totalItems={filteredProviders.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
+
+      <Dialog open={selectedProvider !== null} onOpenChange={(open) => { if (!open) setSelectedProvider(null); }}>
+        <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">{selectedProvider?.razonSocial}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-1 text-sm py-2">
+            {[
+              ["NIT", selectedProvider?.nit],
+              ["Código Inscripción", selectedProvider?.codigoInscripcion],
+              ["Representante Legal", selectedProvider?.representanteLegal],
+              ["Municipio", selectedProvider?.municipio],
+              ["Dirección Establecimiento", selectedProvider?.direccionEstablecimiento],
+              ["Teléfono", selectedProvider?.telefono],
+              ["Correo", selectedProvider?.correo],
+              ["Tipo Actividad", selectedProvider?.tipoActividad],
+              ["Fecha Visita", selectedProvider?.fechaVisita],
+              ["Concepto Sanitario", selectedProvider?.conceptoSanitario],
+              ["Entidad Emisora", selectedProvider?.entidadEmisora],
+            ].filter(([, v]) => v).map(([label, value]) => (
+              <div key={label} className="flex justify-between py-1.5 border-b border-slate-100">
+                <span className="text-muted-foreground font-medium">{label}</span>
+                <span className="text-right max-w-[60%] truncate" title={String(value)}>{String(value)}</span>
+              </div>
+            ))}
+            <div className="flex justify-between py-1.5 border-b border-slate-100">
+              <span className="text-muted-foreground font-medium">Compra Local</span>
+              <span>
+                {selectedProvider?.compraLocal ? (
+                  <Badge className="bg-success text-white">Sí</Badge>
+                ) : (
+                  <Badge variant="secondary">No</Badge>
+                )}
+              </span>
+            </div>
+            <div className="flex justify-between py-1.5">
+              <span className="text-muted-foreground font-medium">Creado</span>
+              <span className="text-right max-w-[60%] truncate">
+                {selectedProvider?.createdAt ? new Date(selectedProvider.createdAt).toLocaleDateString("es-CO") : "-"}
+              </span>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -37,6 +37,7 @@ export function ClientList({ clients }: ClientListProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
 
@@ -135,8 +136,8 @@ export function ClientList({ clients }: ClientListProps) {
         </Dialog>
       </div>
 
-      <div className="rounded-xl border bg-white shadow-lg overflow-hidden">
-        <Table>
+      <div className="rounded-xl border bg-white shadow-lg overflow-x-auto">
+        <Table className="min-w-[600px]">
           <TableHeader className="bg-slate-50/80">
             <TableRow className="hover:bg-transparent">
               <TableHead className="font-bold text-primary py-4">
@@ -177,13 +178,14 @@ export function ClientList({ clients }: ClientListProps) {
               paginatedClients.map((c) => (
                 <TableRow
                   key={c.id}
-                  className="hover:bg-slate-50/80 transition-colors"
+                  onClick={() => setSelectedClient(c)}
+                  className="cursor-pointer hover:bg-slate-50/80 transition-colors"
                 >
                   <TableCell>
-                    <div className="font-bold text-slate-800">{c.nombre}</div>
-                    <div className="text-[11px] text-muted-foreground">
-                      {c.direccion}
+                    <div className="font-bold text-slate-800">
+                      <span className="truncate max-w-[200px] block" title={c.nombre}>{c.nombre}</span>
                     </div>
+                    <div className="text-[11px] text-muted-foreground truncate max-w-[200px] block" title={c.direccion || ""}>{c.direccion}</div>
                   </TableCell>
                   <TableCell>
                     <code className="text-sm bg-slate-100 px-2 py-0.5 rounded font-mono border border-slate-200">
@@ -191,17 +193,15 @@ export function ClientList({ clients }: ClientListProps) {
                     </code>
                   </TableCell>
                   <TableCell>
-                    <span className="text-sm font-medium text-slate-600">
-                      {c.municipio}
-                    </span>
+                    <span className="text-sm font-medium text-slate-600 truncate max-w-[120px] block" title={c.municipio || ""}>{c.municipio}</span>
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">
                       {c.contacto && (
-                        <div className="font-medium">{c.contacto}</div>
+                        <div className="font-medium truncate max-w-[120px] block" title={c.contacto}>{c.contacto}</div>
                       )}
                       {(c.telefono || c.correo) && (
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-xs text-muted-foreground truncate max-w-[120px] block" title={[c.telefono, c.correo].filter(Boolean).join(" · ")}>
                           {c.telefono && <span>{c.telefono}</span>}
                           {c.telefono && c.correo && <span> · </span>}
                           {c.correo && <span>{c.correo}</span>}
@@ -214,7 +214,7 @@ export function ClientList({ clients }: ClientListProps) {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => openEditModal(c)}
+                        onClick={(e) => { e.stopPropagation(); openEditModal(c); }}
                         className="h-9 w-9 text-primary hover:bg-primary/10"
                       >
                         <Edit className="h-4 w-4" />
@@ -222,7 +222,7 @@ export function ClientList({ clients }: ClientListProps) {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleDelete(c.id)}
+                        onClick={(e) => { e.stopPropagation(); handleDelete(c.id); }}
                         className="h-9 w-9 text-destructive hover:bg-destructive/10"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -236,6 +236,35 @@ export function ClientList({ clients }: ClientListProps) {
         </Table>
       </div>
       <Pagination currentPage={page} totalPages={totalPages} totalItems={filteredClients.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
+
+      <Dialog open={selectedClient !== null} onOpenChange={(open) => { if (!open) setSelectedClient(null); }}>
+        <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">{selectedClient?.nombre}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-1 text-sm py-2">
+            {[
+              ["NIT", selectedClient?.nit],
+              ["Dirección", selectedClient?.direccion],
+              ["Municipio", selectedClient?.municipio],
+              ["Contacto", selectedClient?.contacto],
+              ["Teléfono", selectedClient?.telefono],
+              ["Correo", selectedClient?.correo],
+            ].filter(([, v]) => v).map(([label, value]) => (
+              <div key={label} className="flex justify-between py-1.5 border-b border-slate-100">
+                <span className="text-muted-foreground font-medium">{label}</span>
+                <span className="text-right max-w-[60%] truncate" title={String(value)}>{String(value)}</span>
+              </div>
+            ))}
+            <div className="flex justify-between py-1.5">
+              <span className="text-muted-foreground font-medium">Creado</span>
+              <span className="text-right max-w-[60%] truncate">
+                {selectedClient?.createdAt ? new Date(selectedClient.createdAt).toLocaleDateString("es-CO") : "-"}
+              </span>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

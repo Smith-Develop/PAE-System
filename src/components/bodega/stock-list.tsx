@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { History, Search, AlertTriangle } from "lucide-react";
+import { History, Search, AlertTriangle, Info } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -22,6 +22,9 @@ import {
 } from "@/components/ui/dialog";
 import { TransactionHistory } from "./transaction-history";
 import { Product } from "@/types";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 interface StockListProps {
   initialProducts: Product[];
@@ -33,6 +36,7 @@ export function StockList({ initialProducts }: StockListProps) {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
+  const [selectedDetailProduct, setSelectedDetailProduct] = useState<Product | null>(null);
 
   const filteredProducts = initialProducts.filter((p) =>
     p.masterProduct?.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -83,10 +87,10 @@ export function StockList({ initialProducts }: StockListProps) {
                 </TableRow>
               ) : (
                 paginatedProducts.map((p) => (
-                  <TableRow key={p.id} className="hover:bg-slate-50/80 transition-colors">
+                  <TableRow key={p.id} className="hover:bg-slate-50/80 transition-colors cursor-pointer" onClick={() => setSelectedDetailProduct(p)}>
                     <TableCell>
-                      <div className="font-bold text-slate-800">{p.masterProduct?.nombre}</div>
-                      <div className="text-xs text-muted-foreground italic">{p.descripcionMarca}</div>
+                      <div className="font-bold text-slate-800 truncate max-w-[200px]" title={p.masterProduct?.nombre}>{p.masterProduct?.nombre}</div>
+                      <div className="text-xs text-muted-foreground italic truncate max-w-[200px]" title={p.descripcionMarca}>{p.descripcionMarca}</div>
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary" className="font-semibold bg-slate-100 text-slate-700">
@@ -139,9 +143,78 @@ export function StockList({ initialProducts }: StockListProps) {
           </div>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!selectedDetailProduct} onOpenChange={(v) => { if (!v) setSelectedDetailProduct(null); }}>
+        <DialogContent className="w-[95vw] max-w-2xl max-h-[85vh] overflow-y-auto p-0 flex flex-col">
+          <DialogHeader className="p-6 border-b">
+            <DialogTitle className="flex items-center gap-2 text-xl font-bold">
+              <Info className="h-5 w-5 text-primary" />
+              Detalle del Producto
+            </DialogTitle>
+          </DialogHeader>
+          {selectedDetailProduct && (
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 rounded-lg border text-sm">
+                <div>
+                  <span className="text-xs text-muted-foreground uppercase">Alimento</span>
+                  <p className="font-bold text-slate-800">{selectedDetailProduct.masterProduct?.nombre || "—"}</p>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground uppercase">Grupo Alimentos</span>
+                  <Badge variant="secondary" className="font-semibold bg-slate-100 text-slate-700">
+                    {selectedDetailProduct.masterProduct?.foodGroup?.name || "—"}
+                  </Badge>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground uppercase">Descripción / Marca</span>
+                  <p className="font-medium text-slate-700">{selectedDetailProduct.descripcionMarca}</p>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground uppercase">Registro Sanitario</span>
+                  <p className="font-medium text-slate-700">{selectedDetailProduct.registroSanitario || "—"}</p>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground uppercase">Proveedor</span>
+                  <p className="font-medium text-slate-700">{selectedDetailProduct.provider?.razonSocial || "—"}</p>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground uppercase">NIT Proveedor</span>
+                  <p className="font-medium text-slate-700">{selectedDetailProduct.provider?.nit || "—"}</p>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground uppercase">Existencias</span>
+                  <p className="text-xl font-bold text-success">
+                    {selectedDetailProduct.currentStock.toLocaleString("es-CO", { minimumFractionDigits: 1 })}
+                    {" "}
+                    <span className="text-xs text-muted-foreground uppercase">
+                      {selectedDetailProduct.masterProduct?.unidadMedida || ""}
+                    </span>
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 rounded-lg border text-sm">
+                {selectedDetailProduct.createdAt && (
+                  <div>
+                    <span className="text-xs text-muted-foreground uppercase">Creado</span>
+                    <p className="font-medium">
+                      {format(new Date(selectedDetailProduct.createdAt), "dd/MM/yyyy HH:mm", { locale: es })}
+                    </p>
+                  </div>
+                )}
+                {selectedDetailProduct.updatedAt && (
+                  <div>
+                    <span className="text-xs text-muted-foreground uppercase">Actualizado</span>
+                    <p className="font-medium">
+                      {format(new Date(selectedDetailProduct.updatedAt), "dd/MM/yyyy HH:mm", { locale: es })}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
-
-// Helper function cn if not available in context (it is available in lib/utils)
-import { cn } from "@/lib/utils";

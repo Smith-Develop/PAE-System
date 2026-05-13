@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Edit, Trash2, ChefHat } from "lucide-react";
+import { Plus, Edit, Trash2, ChefHat, Info } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,6 +46,7 @@ export function DishList({ dishes, masterProducts, components }: DishListProps) 
   const [editingDish, setEditingDish] = useState<Dish | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
+  const [selectedDish, setSelectedDish] = useState<Dish | null>(null);
 
   const filteredDishes = dishes.filter(
     (d) =>
@@ -141,7 +144,8 @@ export function DishList({ dishes, masterProducts, components }: DishListProps) 
       </div>
 
       <div className="rounded-xl border bg-white shadow-lg overflow-hidden">
-        <Table>
+        <div className="w-full overflow-x-auto">
+        <Table className="min-w-[700px]">
           <TableHeader className="bg-slate-50/80">
             <TableRow className="hover:bg-transparent">
               <TableHead className="font-bold text-primary py-4">
@@ -180,12 +184,13 @@ export function DishList({ dishes, masterProducts, components }: DishListProps) 
               paginatedDishes.map((d) => (
                 <TableRow
                   key={d.id}
-                  className="hover:bg-slate-50/80 transition-colors"
+                  className="hover:bg-slate-50/80 transition-colors cursor-pointer"
+                  onClick={() => setSelectedDish(d)}
                 >
                   <TableCell>
-                    <div className="font-bold text-slate-800">{d.nombre}</div>
+                    <div className="font-bold text-slate-800 truncate max-w-[200px]" title={d.nombre}>{d.nombre}</div>
                     {d.descripcion && (
-                      <div className="text-xs text-muted-foreground mt-0.5">
+                      <div className="text-xs text-muted-foreground mt-0.5" title={d.descripcion || undefined}>
                         {d.descripcion}
                       </div>
                     )}
@@ -248,9 +253,81 @@ export function DishList({ dishes, masterProducts, components }: DishListProps) 
             )}
           </TableBody>
         </Table>
+        </div>
       </div>
 
       <Pagination currentPage={page} totalPages={totalPages} totalItems={filteredDishes.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
+
+      <Dialog open={!!selectedDish} onOpenChange={(v) => { if (!v) setSelectedDish(null); }}>
+        <DialogContent className="w-[95vw] max-w-2xl max-h-[85vh] overflow-y-auto p-0 flex flex-col">
+          <DialogHeader className="p-6 border-b">
+            <DialogTitle className="flex items-center gap-2 text-xl font-bold">
+              <Info className="h-5 w-5 text-primary" />
+              Detalle del Plato
+            </DialogTitle>
+          </DialogHeader>
+          {selectedDish && (
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 rounded-lg border text-sm">
+                <div>
+                  <span className="text-xs text-muted-foreground uppercase">Nombre</span>
+                  <p className="font-bold text-slate-800">{selectedDish.nombre}</p>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground uppercase">Componente</span>
+                  <Badge variant="outline" className="font-semibold border bg-slate-100 text-slate-700">
+                    {selectedDish.componente?.name || "Sin componente"}
+                  </Badge>
+                </div>
+                {selectedDish.descripcion && (
+                  <div className="col-span-2">
+                    <span className="text-xs text-muted-foreground uppercase">Descripción</span>
+                    <p className="text-sm text-slate-600">{selectedDish.descripcion}</p>
+                  </div>
+                )}
+                {selectedDish.createdAt && (
+                  <div>
+                    <span className="text-xs text-muted-foreground uppercase">Creado</span>
+                    <p className="text-sm font-medium">
+                      {format(new Date(selectedDish.createdAt), "dd/MM/yyyy HH:mm", { locale: es })}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <h4 className="font-semibold text-sm text-slate-700">
+                  Ingredientes ({selectedDish.ingredients.length})
+                </h4>
+                {selectedDish.ingredients.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Sin ingredientes registrados.</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-slate-50">
+                        <TableHead className="text-xs">Producto</TableHead>
+                        <TableHead className="text-xs text-right">Cantidad Bruta Unitaria</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {selectedDish.ingredients.map((ing) => (
+                        <TableRow key={ing.id}>
+                          <TableCell className="text-sm font-medium">
+                            {ing.masterProduct?.nombre || "Desconocido"}
+                          </TableCell>
+                          <TableCell className="text-right font-mono text-sm">
+                            {ing.cantidadBrutaUnitaria.toLocaleString("es-CO")} g
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

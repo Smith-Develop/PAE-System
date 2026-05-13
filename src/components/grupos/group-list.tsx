@@ -44,6 +44,7 @@ export function GroupList({ initialGroups }: GroupListProps) {
   const [editingGroup, setEditingGroup] = useState<FoodGroup | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
+  const [selectedItem, setSelectedItem] = useState<FoodGroup | null>(null);
 
   const filteredGroups = initialGroups.filter(
     (g) =>
@@ -114,7 +115,8 @@ export function GroupList({ initialGroups }: GroupListProps) {
       </div>
 
       <div className="rounded-xl border bg-white shadow-lg overflow-hidden">
-        <Table>
+        <div className="w-full overflow-x-auto">
+          <Table className="min-w-[700px]">
           <TableHeader className="bg-slate-50/80">
             <TableRow>
               <TableHead className="font-bold text-primary py-4 w-[30%]">Nombre del Grupo</TableHead>
@@ -132,7 +134,7 @@ export function GroupList({ initialGroups }: GroupListProps) {
               </TableRow>
             ) : (
               paginatedGroups.map((g) => (
-                <TableRow key={g.id} className="hover:bg-slate-50/50 transition-colors">
+                <TableRow key={g.id} className="cursor-pointer hover:bg-slate-50/50 transition-colors" onClick={() => setSelectedItem(g)}>
                   <TableCell className="align-top py-4">
                     <span
                       className="font-bold text-slate-800 block truncate max-w-[280px]"
@@ -163,7 +165,7 @@ export function GroupList({ initialGroups }: GroupListProps) {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => openEditModal(g)}
+                        onClick={(e) => { e.stopPropagation(); openEditModal(g); }}
                         className="h-9 w-9 text-primary hover:bg-primary/10"
                         title="Editar"
                       >
@@ -172,7 +174,7 @@ export function GroupList({ initialGroups }: GroupListProps) {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleDelete(g.id)}
+                        onClick={(e) => { e.stopPropagation(); handleDelete(g.id); }}
                         className="h-9 w-9 text-destructive hover:bg-destructive/10"
                         title="Eliminar"
                       >
@@ -185,9 +187,33 @@ export function GroupList({ initialGroups }: GroupListProps) {
             )}
           </TableBody>
         </Table>
+        </div>
       </div>
 
       <Pagination currentPage={page} totalPages={totalPages} totalItems={filteredGroups.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
+
+      <Dialog open={!!selectedItem} onOpenChange={(open) => { if (!open) setSelectedItem(null); }}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Detalle del Grupo Alimentario</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Nombre</p>
+              <p className="text-base font-medium">{selectedItem?.name}</p>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Descripción</p>
+              <p className="text-base">{selectedItem?.description || "Sin descripción"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Ítems asociados</p>
+              <Badge variant="secondary" className="font-bold text-sm">{selectedItem?._count?.masterProducts || 0}</Badge>
+            </div>
+            <p className="text-sm text-muted-foreground italic">Ver productos asociados en la pestaña Productos por Grupo</p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

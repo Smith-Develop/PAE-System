@@ -22,6 +22,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { OperatorForm } from "./operator-form";
 import { OperatorFormData } from "@/lib/validations";
 import { Operator } from "@/types";
@@ -36,6 +37,7 @@ export function OperatorList({ initialOperators }: OperatorListProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingOperator, setEditingOperator] = useState<Operator | null>(null);
+  const [selectedOperator, setSelectedOperator] = useState<Operator | null>(null);
 
   const filteredOperators = initialOperators.filter((op) =>
     op.nombreOperador.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -128,8 +130,8 @@ export function OperatorList({ initialOperators }: OperatorListProps) {
         </Dialog>
       </div>
 
-      <div className="rounded-md border bg-white shadow-sm overflow-hidden">
-        <Table>
+      <div className="rounded-md border bg-white shadow-sm overflow-x-auto">
+        <Table className="min-w-[700px]">
           <TableHeader>
             <TableRow>
               <TableHead>Operador</TableHead>
@@ -148,24 +150,36 @@ export function OperatorList({ initialOperators }: OperatorListProps) {
               </TableRow>
             ) : (
               filteredOperators.map((op) => (
-                <TableRow key={op.id}>
+                <TableRow key={op.id} onClick={() => setSelectedOperator(op)} className="cursor-pointer hover:bg-slate-50">
                   <TableCell>
-                    <div className="font-medium">{op.nombreOperador}</div>
-                  </TableCell>
-                  <TableCell>{op.nitOperador}</TableCell>
-                  <TableCell>
-                    <div className="text-sm">{op.modeloAtencion}</div>
-                    <div className="text-xs text-muted-foreground">{op.modalidadAtencion}</div>
+                    <div className="font-medium">
+                      <span className="truncate max-w-[200px] block" title={op.nombreOperador}>{op.nombreOperador}</span>
+                    </div>
                   </TableCell>
                   <TableCell>
-                    <div className="text-sm">{op.direccionBodega}</div>
-                    <div className="text-xs text-muted-foreground">{op.municipioBodega}</div>
+                    <span className="truncate max-w-[120px] block" title={op.nitOperador}>{op.nitOperador}</span>
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm">
+                      <span className="truncate max-w-[150px] block" title={op.modeloAtencion}>{op.modeloAtencion}</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      <span className="truncate max-w-[150px] block" title={op.modalidadAtencion}>{op.modalidadAtencion}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm">
+                      <span className="truncate max-w-[150px] block" title={op.direccionBodega}>{op.direccionBodega}</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      <span className="truncate max-w-[150px] block" title={op.municipioBodega}>{op.municipioBodega}</span>
+                    </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => openEditModal(op)}>
+                    <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); openEditModal(op); }}>
                       <Edit className="h-4 w-4 text-primary" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(op.id)}>
+                    <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleDelete(op.id); }}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </TableCell>
@@ -175,6 +189,42 @@ export function OperatorList({ initialOperators }: OperatorListProps) {
           </TableBody>
         </Table>
       </div>
+
+      <Dialog open={selectedOperator !== null} onOpenChange={(open) => { if (!open) setSelectedOperator(null); }}>
+        <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">{selectedOperator?.nombreOperador}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-1 text-sm py-2">
+            {[
+              ["NIT", selectedOperator?.nitOperador],
+              ["Dirección Bodega", selectedOperator?.direccionBodega],
+              ["Municipio Bodega", selectedOperator?.municipioBodega],
+              ["Contacto Bodega", selectedOperator?.contactoBodega],
+              ["Teléfono Bodega", selectedOperator?.telefonoBodega],
+            ].filter(([, v]) => v).map(([label, value]) => (
+              <div key={label} className="flex justify-between py-1.5 border-b border-slate-100">
+                <span className="text-muted-foreground font-medium">{label}</span>
+                <span className="text-right max-w-[60%] truncate" title={String(value)}>{String(value)}</span>
+              </div>
+            ))}
+            <div className="flex justify-between py-1.5 border-b border-slate-100">
+              <span className="text-muted-foreground font-medium">Modelo Atención</span>
+              <Badge variant="secondary">{selectedOperator?.modeloAtencion || "-"}</Badge>
+            </div>
+            <div className="flex justify-between py-1.5 border-b border-slate-100">
+              <span className="text-muted-foreground font-medium">Modalidad Atención</span>
+              <Badge variant="secondary">{selectedOperator?.modalidadAtencion || "-"}</Badge>
+            </div>
+            <div className="flex justify-between py-1.5">
+              <span className="text-muted-foreground font-medium">Creado</span>
+              <span className="text-right max-w-[60%] truncate">
+                {selectedOperator?.createdAt ? new Date(selectedOperator.createdAt).toLocaleDateString("es-CO") : "-"}
+              </span>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

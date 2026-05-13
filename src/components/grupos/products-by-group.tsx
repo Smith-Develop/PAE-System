@@ -71,6 +71,7 @@ export function ProductsByGroup({ masterProducts, foodGroups }: ProductsByGroupP
   const [editingProduct, setEditingProduct] = useState<MasterProductWithGroup | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
+  const [selectedItem, setSelectedItem] = useState<MasterProductWithGroup | null>(null);
 
   const form = useForm<MasterProductFormData>({
     resolver: zodResolver(masterProductSchema) as any,
@@ -308,7 +309,7 @@ export function ProductsByGroup({ masterProducts, foodGroups }: ProductsByGroupP
 
       <div className="rounded-xl border bg-white shadow-lg overflow-hidden">
         <div className="w-full overflow-x-auto">
-          <Table>
+          <Table className="min-w-[700px]">
             <TableHeader className="bg-slate-50/80">
               <TableRow>
                 <TableHead className="font-bold text-primary py-4 w-[30%]">Nombre</TableHead>
@@ -336,7 +337,7 @@ export function ProductsByGroup({ masterProducts, foodGroups }: ProductsByGroupP
                 </TableRow>
               ) : (
                 paginatedProducts.map((p) => (
-                  <TableRow key={p.id} className="hover:bg-slate-50/50 transition-colors">
+                  <TableRow key={p.id} className="cursor-pointer hover:bg-slate-50/50 transition-colors" onClick={() => setSelectedItem(p)}>
                     <TableCell className="py-3">
                       <span
                         className="font-bold text-slate-800 block truncate max-w-[260px]"
@@ -364,7 +365,7 @@ export function ProductsByGroup({ masterProducts, foodGroups }: ProductsByGroupP
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => openEditModal(p)}
+                          onClick={(e) => { e.stopPropagation(); openEditModal(p); }}
                           className="h-9 w-9 text-primary hover:bg-primary/10"
                           title="Editar"
                         >
@@ -373,7 +374,7 @@ export function ProductsByGroup({ masterProducts, foodGroups }: ProductsByGroupP
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleDelete(p.id)}
+                          onClick={(e) => { e.stopPropagation(); handleDelete(p.id); }}
                           className="h-9 w-9 text-destructive hover:bg-destructive/10"
                           title="Eliminar"
                         >
@@ -395,6 +396,28 @@ export function ProductsByGroup({ masterProducts, foodGroups }: ProductsByGroupP
         {filteredProducts.length} producto{filteredProducts.length !== 1 ? "s" : ""}
         {filterGroupId !== "all" && " en este grupo"}
       </div>
+
+      <Dialog open={!!selectedItem} onOpenChange={(open) => { if (!open) setSelectedItem(null); }}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Detalle del Producto</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Nombre</p>
+              <p className="text-base font-medium">{selectedItem?.nombre}</p>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Unidad de Medida</p>
+              <code className="text-sm bg-slate-100 px-2 py-0.5 rounded font-mono border border-slate-200">{selectedItem?.unidadMedida}</code>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Grupo Alimentario</p>
+              <Badge variant="secondary" className="font-semibold">{selectedItem?.foodGroup?.name || "—"}</Badge>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

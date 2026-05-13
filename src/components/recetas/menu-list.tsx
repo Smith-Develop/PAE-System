@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Edit, Trash2, ClipboardList } from "lucide-react";
+import { Plus, Edit, Trash2, ClipboardList, Info } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +25,14 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { MenuForm } from "./menu-form";
 import { MenuFormData } from "@/lib/validations";
 import { Menu, Dish } from "@/types";
@@ -40,6 +50,7 @@ export function MenuList({ menus, dishes }: MenuListProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingMenu, setEditingMenu] = useState<Menu | null>(null);
+  const [selectedMenuDetail, setSelectedMenuDetail] = useState<Menu | null>(null);
 
   const filteredMenus = menus.filter((m) =>
     m.nombre.toLowerCase().includes(searchTerm.toLowerCase())
@@ -145,7 +156,7 @@ export function MenuList({ menus, dishes }: MenuListProps) {
           </div>
         ) : (
           filteredMenus.map((m) => (
-            <Card key={m.id} className="flex flex-col">
+            <Card key={m.id} className="flex flex-col cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSelectedMenuDetail(m)}>
               <CardHeader className="pb-2">
                 <CardTitle className="text-xl text-primary">
                   {m.nombre}
@@ -184,7 +195,8 @@ export function MenuList({ menus, dishes }: MenuListProps) {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setEditingMenu(m);
                     setIsOpen(true);
                   }}
@@ -194,7 +206,10 @@ export function MenuList({ menus, dishes }: MenuListProps) {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleDelete(m.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(m.id);
+                  }}
                   className="text-destructive hover:text-destructive"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -204,6 +219,90 @@ export function MenuList({ menus, dishes }: MenuListProps) {
           ))
         )}
       </div>
+
+      <Dialog open={!!selectedMenuDetail} onOpenChange={(v) => { if (!v) setSelectedMenuDetail(null); }}>
+        <DialogContent className="w-[95vw] max-w-4xl max-h-[85vh] overflow-y-auto p-0 flex flex-col">
+          <DialogHeader className="p-6 border-b">
+            <DialogTitle className="flex items-center gap-2 text-xl font-bold">
+              <Info className="h-5 w-5 text-primary" />
+              Detalle del Menú: {selectedMenuDetail?.nombre}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedMenuDetail && (
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 rounded-lg border text-sm">
+                <div>
+                  <span className="text-xs text-muted-foreground uppercase">Nombre</span>
+                  <p className="font-bold text-slate-800">{selectedMenuDetail.nombre}</p>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground uppercase">Total Platos</span>
+                  <p className="font-bold text-slate-800">{selectedMenuDetail.dishes?.length || 0}</p>
+                </div>
+                {selectedMenuDetail.descripcion && (
+                  <div className="col-span-2">
+                    <span className="text-xs text-muted-foreground uppercase">Descripción</span>
+                    <p className="text-sm text-slate-600">{selectedMenuDetail.descripcion}</p>
+                  </div>
+                )}
+                {selectedMenuDetail.createdAt && (
+                  <div className="col-span-2">
+                    <span className="text-xs text-muted-foreground uppercase">Creado</span>
+                    <p className="text-sm font-medium">
+                      {format(new Date(selectedMenuDetail.createdAt), "dd/MM/yyyy HH:mm", { locale: es })}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="font-semibold text-sm text-slate-700">
+                  Platos del Menú
+                </h4>
+                {(selectedMenuDetail.dishes || []).length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Sin platos registrados.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {(selectedMenuDetail.dishes || []).map((md, idx) => (
+                      <div key={md.id} className="border rounded-lg p-4 bg-white">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="text-sm font-semibold text-slate-500">{idx + 1}.</span>
+                          <span className="font-bold text-slate-800">{md.dish?.nombre || "Plato"}</span>
+                          <Badge variant="outline" className="text-xs border bg-slate-100 text-slate-700">
+                            {md.dish?.componente?.name}
+                          </Badge>
+                        </div>
+                        {md.dish?.ingredients && md.dish.ingredients.length > 0 && (
+                          <Table>
+                            <TableHeader>
+                              <TableRow className="bg-slate-50">
+                                <TableHead className="text-xs">Producto</TableHead>
+                                <TableHead className="text-xs text-right">Cantidad Bruta Unitaria</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {md.dish.ingredients.map((ing) => (
+                                <TableRow key={ing.id}>
+                                  <TableCell className="text-sm font-medium">
+                                    {ing.masterProduct?.nombre || "Desconocido"}
+                                  </TableCell>
+                                  <TableCell className="text-right font-mono text-sm">
+                                    {ing.cantidadBrutaUnitaria.toLocaleString("es-CO")} g
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -534,6 +534,7 @@ export function OrderCalculator({
                 </p>
               </div>
             ) : (
+              <div className="w-full overflow-x-auto">
               <Table>
                 <TableHeader className="bg-muted/30 sticky top-0 z-10 shadow-sm">
                   <TableRow>
@@ -569,7 +570,7 @@ export function OrderCalculator({
 
                     return (
                       <TableRow key={index} className="hover:bg-accent/50">
-                        <TableCell className="text-xs text-muted-foreground">
+                        <TableCell className="text-xs text-muted-foreground max-w-[200px]">
                           {/* Mostrar de qué platos viene este producto */}
                           {(() => {
                             const sources: string[] = [];
@@ -599,7 +600,8 @@ export function OrderCalculator({
                                   sources.map((s, i) => (
                                     <div
                                       key={i}
-                                      className="text-[10px] leading-tight"
+                                      className="text-[10px] leading-tight truncate"
+                                      title={s}
                                     >
                                       {s}
                                     </div>
@@ -611,10 +613,10 @@ export function OrderCalculator({
                             );
                           })()}
                         </TableCell>
-                        <TableCell className="font-medium">
+                        <TableCell className="font-medium truncate max-w-[150px]" title={item.productName}>
                           {item.productName}
                         </TableCell>
-                        <TableCell className="min-w-[250px]">
+                        <TableCell className="min-w-[250px] truncate max-w-[300px]">
                           <Select
                             value={
                               selectedVariants[item.masterProductId] || ""
@@ -663,6 +665,7 @@ export function OrderCalculator({
                   })}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
           {packingList.length > 0 && (

@@ -241,7 +241,7 @@ export function ProductList({ products, masterProducts, providers, foodGroups }:
             </div>
             <div>
               <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Grupo Alimentario</p>
-              <Badge variant="secondary" className="font-semibold">{selectedItem?.masterProduct?.foodGroup?.name || "Sin grupo"}</Badge>
+              <Badge variant="secondary" className="font-semibold whitespace-normal break-all text-left">{selectedItem?.masterProduct?.foodGroup?.name || "Sin grupo"}</Badge>
             </div>
             <div>
               <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Proveedor</p>

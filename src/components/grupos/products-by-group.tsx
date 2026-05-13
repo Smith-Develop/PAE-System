@@ -413,7 +413,7 @@ export function ProductsByGroup({ masterProducts, foodGroups }: ProductsByGroupP
             </div>
             <div>
               <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Grupo Alimentario</p>
-              <Badge variant="secondary" className="font-semibold">{selectedItem?.foodGroup?.name || "—"}</Badge>
+              <Badge variant="secondary" className="font-semibold whitespace-normal break-all text-left">{selectedItem?.foodGroup?.name || "—"}</Badge>
             </div>
           </div>
         </DialogContent>

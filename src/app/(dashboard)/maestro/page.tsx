@@ -38,7 +38,7 @@ export default async function MaestroPage() {
       </div>
 
       <Tabs defaultValue="catalogo" className="w-full">
-        <TabsList className="mb-6">
+        <TabsList className="mb-6 flex-wrap">
           <TabsTrigger value="catalogo" className="gap-2">
             <BookOpen className="h-4 w-4" />
             Catálogo General

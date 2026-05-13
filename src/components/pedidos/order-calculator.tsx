@@ -322,7 +322,8 @@ export function OrderCalculator({
     <div className="flex flex-col gap-6 h-full overflow-hidden">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 shrink-0">
         {/* PANEL IZQUIERDO */}
-        <Card className="flex flex-col h-[60vh] overflow-hidden">
+        <Card className="flex flex-col max-h-[60vh] min-h-[350px] overflow-hidden
+">
           <CardHeader className="border-b bg-muted/20 pb-4 shrink-0">
             <CardTitle className="text-xl text-primary">
               1. Datos del Pedido
@@ -497,7 +498,7 @@ export function OrderCalculator({
               </div>
             </div>
 
-            <div className="mt-4 p-3 bg-white border rounded-md text-xs grid grid-cols-2 gap-x-4 gap-y-1 border-primary/20">
+            <div className="mt-4 p-3 bg-white border rounded-md text-xs grid grid-cols-1 sm:grid-cols-2 gap-4 border-primary/20">
               {selectedClient && (
                 <>
                   <div className="col-span-2 font-bold text-primary text-sm mb-1 uppercase">
@@ -616,7 +617,7 @@ export function OrderCalculator({
                         <TableCell className="font-medium truncate max-w-[150px]" title={item.productName}>
                           {item.productName}
                         </TableCell>
-                        <TableCell className="min-w-[250px] truncate max-w-[300px]">
+                        <TableCell className="min-w-[160px] truncate max-w-[300px]">
                           <Select
                             value={
                               selectedVariants[item.masterProductId] || ""
@@ -718,98 +719,100 @@ export function OrderCalculator({
                 <p>No hay pedidos registrados aún.</p>
               </div>
             ) : (
-              <Table>
-                <TableHeader className="bg-muted/20 sticky top-0 z-10">
-                  <TableRow>
-                    <TableHead className="font-semibold text-slate-700">
-                      Fecha
-                    </TableHead>
-                    <TableHead className="font-semibold text-slate-700">
-                      Cliente
-                    </TableHead>
-                    <TableHead className="font-semibold text-slate-700">
-                      Operador
-                    </TableHead>
-                    <TableHead className="font-semibold text-slate-700 text-right">
-                      Raciones
-                    </TableHead>
-                    <TableHead className="font-semibold text-slate-700 text-right">
-                      Materiales
-                    </TableHead>
-                    <TableHead className="font-semibold text-slate-700 text-center">
-                      Ver
-                    </TableHead>
-                    <TableHead className="font-semibold text-slate-700 text-center">
-                      Eliminar
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedOrders.map((order) => (
-                    <TableRow
-                      key={order.id}
-                      className="hover:bg-slate-50 cursor-pointer"
-                      onClick={() => openOrderModal(order)}
-                    >
-                      <TableCell>
-                        <span className="text-sm font-medium">
-                          {format(new Date(order.fecha), "dd/MM/yyyy HH:mm", {
-                            locale: es,
-                          })}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <span className="font-medium text-sm text-primary">
-                            {order.client?.nombre || "—"}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-sm text-slate-600">
-                          {order.operator?.nombreOperador || "—"}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Badge variant="secondary" className="font-mono">
-                          {order.items
-                            .reduce((sum, i) => sum + i.raciones, 0)
-                            .toLocaleString("es-CO")}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right text-sm text-slate-500">
-                        {order.materials.length} items
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openOrderModal(order);
-                          }}
-                        >
-                          <Eye className="h-4 w-4 text-primary" />
-                        </Button>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 hover:bg-destructive/10"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteOrder(order.id);
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </TableCell>
+              <div className="w-full overflow-x-auto">
+                <Table className="min-w-[700px]">
+                  <TableHeader className="bg-muted/20 sticky top-0 z-10">
+                    <TableRow>
+                      <TableHead className="font-semibold text-slate-700">
+                        Fecha
+                      </TableHead>
+                      <TableHead className="font-semibold text-slate-700">
+                        Cliente
+                      </TableHead>
+                      <TableHead className="font-semibold text-slate-700">
+                        Operador
+                      </TableHead>
+                      <TableHead className="font-semibold text-slate-700 text-right">
+                        Raciones
+                      </TableHead>
+                      <TableHead className="font-semibold text-slate-700 text-right">
+                        Materiales
+                      </TableHead>
+                      <TableHead className="font-semibold text-slate-700 text-center">
+                        Ver
+                      </TableHead>
+                      <TableHead className="font-semibold text-slate-700 text-center">
+                        Eliminar
+                      </TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedOrders.map((order) => (
+                      <TableRow
+                        key={order.id}
+                        className="hover:bg-slate-50 cursor-pointer"
+                        onClick={() => openOrderModal(order)}
+                      >
+                        <TableCell>
+                          <span className="text-sm font-medium">
+                            {format(new Date(order.fecha), "dd/MM/yyyy HH:mm", {
+                              locale: es,
+                            })}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <span className="font-medium text-sm text-primary">
+                              {order.client?.nombre || "—"}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-sm text-slate-600">
+                            {order.operator?.nombreOperador || "—"}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Badge variant="secondary" className="font-mono">
+                            {order.items
+                              .reduce((sum, i) => sum + i.raciones, 0)
+                              .toLocaleString("es-CO")}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right text-sm text-slate-500">
+                          {order.materials.length} items
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openOrderModal(order);
+                            }}
+                          >
+                            <Eye className="h-4 w-4 text-primary" />
+                          </Button>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 hover:bg-destructive/10"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteOrder(order.id);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </CardContent>
           </Card>
@@ -827,7 +830,7 @@ export function OrderCalculator({
           </DialogHeader>
           {selectedOrder && (
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 rounded-lg border text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-50 rounded-lg border text-sm">
                 <div>
                   <span className="text-xs text-muted-foreground uppercase">
                     Fecha

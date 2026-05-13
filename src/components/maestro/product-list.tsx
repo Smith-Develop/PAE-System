@@ -148,7 +148,7 @@ export function ProductList({ products, masterProducts, providers, foodGroups }:
 
       <div className="rounded-xl border bg-white shadow-lg overflow-hidden">
         <div className="w-full overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
-          <Table className="min-w-[1200px]">
+          <Table className="min-w-[900px]">
             <TableHeader className="bg-slate-50/80">
               <TableRow className="hover:bg-transparent">
                 <TableHead className="w-[300px] font-bold text-primary py-4">Producto / Marca</TableHead>
@@ -229,7 +229,7 @@ export function ProductList({ products, masterProducts, providers, foodGroups }:
             <DialogTitle>Detalle del Producto</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Producto Maestro</p>
                 <p className="text-base font-medium">{selectedItem?.masterProduct?.nombre || "—"}</p>
@@ -248,7 +248,7 @@ export function ProductList({ products, masterProducts, providers, foodGroups }:
               <p className="text-sm font-medium text-slate-700">{selectedItem?.provider?.razonSocial || "—"}</p>
               <p className="text-xs text-muted-foreground">NIT: {selectedItem?.provider?.nit || "—"}</p>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Descripción y Marca</p>
                 <p className="text-base">{selectedItem?.descripcionMarca}</p>
@@ -267,7 +267,7 @@ export function ProductList({ products, masterProducts, providers, foodGroups }:
                 {selectedItem?.currentStock.toLocaleString?.("es-CO", { minimumFractionDigits: 1 }) ?? "0.0"}
               </span>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Creado</p>
                 <p className="text-xs text-muted-foreground">{selectedItem?.createdAt ? new Date(selectedItem.createdAt).toLocaleDateString("es-CO", { dateStyle: "long" }) : "—"}</p>

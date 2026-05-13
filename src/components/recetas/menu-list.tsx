@@ -230,7 +230,7 @@ export function MenuList({ menus, dishes }: MenuListProps) {
           </DialogHeader>
           {selectedMenuDetail && (
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 rounded-lg border text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-50 rounded-lg border text-sm">
                 <div>
                   <span className="text-xs text-muted-foreground uppercase">Nombre</span>
                   <p className="font-bold text-slate-800">{selectedMenuDetail.nombre}</p>

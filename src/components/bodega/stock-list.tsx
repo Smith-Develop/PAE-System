@@ -68,7 +68,7 @@ export function StockList({ initialProducts }: StockListProps) {
 
       <div className="rounded-xl border bg-white shadow-lg overflow-hidden">
         <div className="w-full overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
-          <Table className="min-w-[1000px]">
+          <Table className="min-w-[700px]">
             <TableHeader className="bg-slate-50/80">
               <TableRow className="hover:bg-transparent">
                 <TableHead className="font-bold text-primary py-4">Producto / Alimento</TableHead>
@@ -154,7 +154,7 @@ export function StockList({ initialProducts }: StockListProps) {
           </DialogHeader>
           {selectedDetailProduct && (
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 rounded-lg border text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-50 rounded-lg border text-sm">
                 <div>
                   <span className="text-xs text-muted-foreground uppercase">Alimento</span>
                   <p className="font-bold text-slate-800">{selectedDetailProduct.masterProduct?.nombre || "—"}</p>
@@ -193,7 +193,7 @@ export function StockList({ initialProducts }: StockListProps) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 rounded-lg border text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-50 rounded-lg border text-sm">
                 {selectedDetailProduct.createdAt && (
                   <div>
                     <span className="text-xs text-muted-foreground uppercase">Creado</span>

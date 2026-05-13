@@ -237,7 +237,7 @@ export function SettingsPanel({ user }: SettingsPanelProps) {
               <CardDescription>Actualiza tu nombre y correo electrónico.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <p className="text-xs text-muted-foreground uppercase mb-1">Email actual</p>
                   <p className="font-mono text-sm bg-slate-50 px-3 py-2 rounded border">{user.email || "—"}</p>
@@ -300,37 +300,39 @@ export function SettingsPanel({ user }: SettingsPanelProps) {
               <Button onClick={openCreateUser} size="sm"><Plus className="h-4 w-4 mr-2" />Nuevo Usuario</Button>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Rol</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {userList.length === 0 ? (
-                    <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No hay usuarios</TableCell></TableRow>
-                  ) : userList.map((u) => (
-                    <TableRow key={u.id}>
-                      <TableCell className="font-medium">{u.name}</TableCell>
-                      <TableCell className="font-mono text-sm">{u.email}</TableCell>
-                      <TableCell><Badge variant="outline">{u.role.name}</Badge></TableCell>
-                      <TableCell>
-                        <Badge variant={u.active ? "secondary" : "destructive"} className="cursor-pointer" onClick={() => handleToggleActive(u)}>
-                          {u.active ? "Activo" : "Inactivo"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="ghost" size="icon" onClick={() => openEditUser(u)} className="h-8 w-8"><Edit className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(u)} className="h-8 w-8 text-destructive"><Trash2 className="h-4 w-4" /></Button>
-                      </TableCell>
+              <div className="w-full overflow-x-auto">
+                <Table className="min-w-[600px]">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nombre</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Rol</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {userList.length === 0 ? (
+                      <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No hay usuarios</TableCell></TableRow>
+                    ) : userList.map((u) => (
+                      <TableRow key={u.id}>
+                        <TableCell className="font-medium">{u.name}</TableCell>
+                        <TableCell className="font-mono text-sm">{u.email}</TableCell>
+                        <TableCell><Badge variant="outline">{u.role.name}</Badge></TableCell>
+                        <TableCell>
+                          <Badge variant={u.active ? "secondary" : "destructive"} className="cursor-pointer" onClick={() => handleToggleActive(u)}>
+                            {u.active ? "Activo" : "Inactivo"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="ghost" size="icon" onClick={() => openEditUser(u)} className="h-8 w-8"><Edit className="h-4 w-4" /></Button>
+                          <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(u)} className="h-8 w-8 text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -375,7 +377,7 @@ export function SettingsPanel({ user }: SettingsPanelProps) {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                 {[
                   { entity: "providers", label: "Proveedores", icon: Truck },
                   { entity: "operators", label: "Operadores", icon: Building },

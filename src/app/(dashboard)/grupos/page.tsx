@@ -31,7 +31,7 @@ export default async function GruposPage() {
       </div>
 
       <Tabs defaultValue="grupos" className="w-full">
-        <TabsList className="mb-6">
+        <TabsList className="mb-6 flex-wrap">
           <TabsTrigger value="grupos" className="gap-2">
             <Layers className="h-4 w-4" />
             Grupos Alimentarios

@@ -137,8 +137,8 @@ export function PurchaseList({ initialPurchases, products, operators }: Purchase
         </Dialog>
       </div>
 
-      <div className="rounded-md border bg-white shadow-sm overflow-hidden">
-        <Table>
+      <div className="rounded-md border bg-white shadow-sm overflow-x-auto">
+        <Table className="min-w-[800px]">
           <TableHeader>
             <TableRow>
               <TableHead>Fecha</TableHead>

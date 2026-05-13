@@ -140,12 +140,12 @@ export function ProviderList({ providers }: ProviderListProps) {
         <Table className="min-w-[600px] table-fixed">
           <TableHeader>
             <TableRow>
-              <TableHead>Razón Social</TableHead>
-              <TableHead>NIT</TableHead>
-              <TableHead>Municipio</TableHead>
-              <TableHead>Contacto</TableHead>
-              <TableHead>Compra Local</TableHead>
-              <TableHead className="text-right">Acciones</TableHead>
+              <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Razón Social</TableHead>
+              <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">NIT</TableHead>
+              <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Municipio</TableHead>
+              <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Contacto</TableHead>
+              <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Compra Local</TableHead>
+              <TableHead className="text-right font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

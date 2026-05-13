@@ -539,19 +539,19 @@ export function OrderCalculator({
               <Table>
                 <TableHeader className="bg-muted/30 sticky top-0 z-10 shadow-sm">
                   <TableRow>
-                    <TableHead className="font-semibold text-primary">
+                    <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
                       Menú / Plato
                     </TableHead>
-                    <TableHead className="font-semibold text-primary">
+                    <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
                       Producto
                     </TableHead>
-                    <TableHead className="font-semibold text-primary">
+                    <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
                       Proveedor / Marca *
                     </TableHead>
-                    <TableHead className="font-semibold text-primary text-right">
+                    <TableHead className="text-right font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
                       Cantidad
                     </TableHead>
-                    <TableHead className="font-semibold text-primary">
+                    <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
                       Unidad
                     </TableHead>
                   </TableRow>
@@ -722,25 +722,25 @@ export function OrderCalculator({
                 <Table className="min-w-[600px] table-fixed">
                   <TableHeader className="bg-muted/20 sticky top-0 z-10">
                     <TableRow>
-                      <TableHead className="font-semibold text-slate-700">
+                      <TableHead className="font-semibold text-slate-700 py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
                         Fecha
                       </TableHead>
-                      <TableHead className="font-semibold text-slate-700">
+                      <TableHead className="font-semibold text-slate-700 py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
                         Cliente
                       </TableHead>
-                      <TableHead className="font-semibold text-slate-700">
+                      <TableHead className="font-semibold text-slate-700 py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
                         Operador
                       </TableHead>
-                      <TableHead className="font-semibold text-slate-700 text-right">
+                      <TableHead className="text-right font-semibold text-slate-700 py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
                         Raciones
                       </TableHead>
-                      <TableHead className="font-semibold text-slate-700 text-right">
+                      <TableHead className="text-right font-semibold text-slate-700 py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
                         Materiales
                       </TableHead>
-                      <TableHead className="font-semibold text-slate-700 text-center">
+                      <TableHead className="text-center font-semibold text-slate-700 py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
                         Ver
                       </TableHead>
-                      <TableHead className="font-semibold text-slate-700 text-center">
+                      <TableHead className="text-center font-semibold text-slate-700 py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
                         Eliminar
                       </TableHead>
                     </TableRow>
@@ -888,12 +888,12 @@ export function OrderCalculator({
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-slate-50">
-                      <TableHead className="text-xs">Producto</TableHead>
-                      <TableHead className="text-xs">Proveedor</TableHead>
-                      <TableHead className="text-xs text-right">
+                      <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Producto</TableHead>
+                      <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Proveedor</TableHead>
+                      <TableHead className="text-right font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
                         Cantidad
                       </TableHead>
-                      <TableHead className="text-xs">Unidad</TableHead>
+                      <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Unidad</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

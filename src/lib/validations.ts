@@ -91,10 +91,10 @@ export type MenuFormData = z.infer<typeof menuSchema>;
 export const purchaseSchema = z.object({
   productId: z.string().min(1, "Seleccione un producto"),
   operatorId: z.string().min(1, "Seleccione un operador"),
+  clientId: z.string().optional().default(""),
   fechaCompra: z.coerce.date({ message: "La fecha es requerida" }),
-  cantidadComprada: z.coerce
-    .number()
-    .positive("La cantidad debe ser mayor a 0"),
+  precioUnitario: z.coerce.number().min(0, "El precio debe ser mayor o igual a 0"),
+  cantidadComprada: z.coerce.number().positive("La cantidad debe ser mayor a 0"),
   valorTotal: z.coerce.number().positive("El valor debe ser mayor a 0"),
 });
 

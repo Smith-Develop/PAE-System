@@ -148,16 +148,16 @@ export function DishList({ dishes, masterProducts, components }: DishListProps) 
         <Table className="min-w-[400px] table-fixed">
           <TableHeader className="bg-slate-50/80">
             <TableRow className="hover:bg-transparent">
-              <TableHead className="font-bold text-primary py-4">
+              <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
                 Nombre
               </TableHead>
-              <TableHead className="font-bold text-primary py-4">
+              <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
                 Componente
               </TableHead>
-              <TableHead className="font-bold text-primary py-4">
+              <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
                 Ingredientes
               </TableHead>
-              <TableHead className="text-right font-bold text-primary py-4">
+              <TableHead className="text-right font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
                 Acciones
               </TableHead>
             </TableRow>
@@ -306,8 +306,8 @@ export function DishList({ dishes, masterProducts, components }: DishListProps) 
                     <Table className="table-fixed w-full">
                     <TableHeader>
                       <TableRow className="bg-slate-50">
-                        <TableHead className="text-xs">Producto</TableHead>
-                        <TableHead className="text-xs text-right">Cantidad Bruta Unitaria</TableHead>
+                        <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Producto</TableHead>
+                        <TableHead className="text-right font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Cantidad Bruta Unitaria</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>

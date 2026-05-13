@@ -140,17 +140,17 @@ export function ClientList({ clients }: ClientListProps) {
         <Table className="min-w-[500px] table-fixed">
           <TableHeader className="bg-slate-50/80">
             <TableRow className="hover:bg-transparent">
-              <TableHead className="font-bold text-primary py-4">
+              <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
                 Nombre
               </TableHead>
-              <TableHead className="font-bold text-primary py-4">NIT</TableHead>
-              <TableHead className="font-bold text-primary py-4">
+              <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">NIT</TableHead>
+              <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
                 Municipio
               </TableHead>
-              <TableHead className="font-bold text-primary py-4">
+              <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
                 Contacto
               </TableHead>
-              <TableHead className="text-right font-bold text-primary py-4">
+              <TableHead className="text-right font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
                 Acciones
               </TableHead>
             </TableRow>

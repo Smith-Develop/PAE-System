@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
@@ -26,20 +26,31 @@ import {
 } from "@/components/ui/dialog";
 import { PurchaseForm } from "./purchase-form";
 import { PurchaseFormData } from "@/lib/validations";
-import { Purchase, Product, Operator } from "@/types";
+import { Purchase, Product, Operator, Client } from "@/types";
+import { AI_ENABLED } from "@/lib/ai-config";
+import { InvoiceScanner } from "./invoice-scanner";
+import { InvoiceMapper } from "./invoice-mapper";
 
 interface PurchaseListProps {
   initialPurchases: Purchase[];
   products: Product[];
   operators: Operator[];
+  clients: Client[];
 }
 
-export function PurchaseList({ initialPurchases, products, operators }: PurchaseListProps) {
+export function PurchaseList({ initialPurchases, products: initialProducts, operators, clients }: PurchaseListProps) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingPurchase, setEditingPurchase] = useState<Purchase | null>(null);
+  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [scannedItems, setScannedItems] = useState<any[]>([]);
+  const [showScanner, setShowScanner] = useState(false);
+  const [showMapper, setShowMapper] = useState(false);
+  const [invoiceOpId, setInvoiceOpId] = useState("");
+  const [invoiceClientId, setInvoiceClientId] = useState("");
+  const [invoiceFecha, setInvoiceFecha] = useState("");
 
   const filteredPurchases = initialPurchases.filter(
     (p) =>
@@ -114,6 +125,12 @@ export function PurchaseList({ initialPurchases, products, operators }: Purchase
           onChange={(e) => setSearchTerm(e.target.value)}
           className="max-w-md bg-white"
         />
+        {AI_ENABLED && (
+          <Button variant="outline" size="sm" onClick={() => setShowScanner(!showScanner)}>
+            <Upload className="mr-2 h-4 w-4" />
+            {showScanner ? "Ocultar Escáner" : "Escanear Factura"}
+          </Button>
+        )}
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger render={<Button onClick={openCreateModal} />}>
             <Plus className="mr-2 h-4 w-4" /> Registrar Compra
@@ -129,6 +146,8 @@ export function PurchaseList({ initialPurchases, products, operators }: Purchase
                 initialData={editingPurchase} 
                 products={products}
                 operators={operators}
+                clients={clients}
+                onProductCreated={(newProduct) => setProducts((prev) => [newProduct, ...prev])}
                 onSubmit={onSubmit} 
                 isSubmitting={isSubmitting} 
               />
@@ -137,17 +156,53 @@ export function PurchaseList({ initialPurchases, products, operators }: Purchase
         </Dialog>
       </div>
 
+      {/* Escáner de Facturas IA */}
+      {AI_ENABLED && showScanner && (
+        <div className="space-y-4">
+          {!showMapper && (
+            <InvoiceScanner
+              onItemsExtracted={(items) => {
+                setScannedItems(items);
+                setInvoiceOpId("");
+                setInvoiceClientId("");
+                setInvoiceFecha(new Date().toISOString().slice(0, 10));
+                setShowMapper(true);
+              }}
+            />
+          )}
+          {showMapper && scannedItems.length > 0 && (
+            <InvoiceMapper
+              items={scannedItems}
+              operatorId={invoiceOpId}
+              clientId={invoiceClientId}
+              fechaCompra={invoiceFecha}
+              onSaved={() => {
+                setScannedItems([]);
+                setShowMapper(false);
+                setShowScanner(false);
+                toast.success("Factura guardada exitosamente");
+                router.refresh();
+              }}
+              onCancel={() => {
+                setScannedItems([]);
+                setShowMapper(false);
+              }}
+            />
+          )}
+        </div>
+      )}
+
       <div className="rounded-md border bg-white shadow-sm overflow-x-auto">
         <Table className="min-w-[650px] table-fixed">
           <TableHeader>
             <TableRow>
-              <TableHead>Fecha</TableHead>
-              <TableHead>Operador</TableHead>
-              <TableHead>Producto</TableHead>
-              <TableHead>Proveedor</TableHead>
-              <TableHead className="text-right">Cantidad</TableHead>
-              <TableHead className="text-right">Valor Total</TableHead>
-              <TableHead className="text-right">Acciones</TableHead>
+              <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Fecha</TableHead>
+              <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Operador</TableHead>
+              <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Producto</TableHead>
+              <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Proveedor</TableHead>
+              <TableHead className="text-right font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Cantidad</TableHead>
+              <TableHead className="text-right font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Valor Total</TableHead>
+              <TableHead className="text-right font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

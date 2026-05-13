@@ -207,13 +207,13 @@ export function ComponentList({ components }: ComponentListProps) {
         <Table className="table-fixed w-full">
           <TableHeader className="bg-slate-50/80">
             <TableRow className="hover:bg-transparent">
-              <TableHead className="font-bold text-primary py-4 w-full">
+              <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight w-full">
                 Nombre del Componente
               </TableHead>
-              <TableHead className="font-bold text-primary py-4 text-center">
+              <TableHead className="text-center font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
                 Platos
               </TableHead>
-              <TableHead className="text-right font-bold text-primary py-4">
+              <TableHead className="text-right font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
                 Acciones
               </TableHead>
             </TableRow>

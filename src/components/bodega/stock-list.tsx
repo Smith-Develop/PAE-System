@@ -71,11 +71,11 @@ export function StockList({ initialProducts }: StockListProps) {
           <Table className="min-w-[550px] table-fixed">
             <TableHeader className="bg-slate-50/80">
               <TableRow className="hover:bg-transparent">
-                <TableHead className="font-bold text-primary py-4">Producto / Alimento</TableHead>
-                <TableHead className="font-bold text-primary py-4">Grupo Alimentos</TableHead>
-                <TableHead className="font-bold text-primary py-4">Proveedor</TableHead>
-                <TableHead className="text-right font-bold text-primary py-4">Existencias</TableHead>
-                <TableHead className="text-right font-bold text-primary py-4">Acciones</TableHead>
+                <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Producto / Alimento</TableHead>
+                <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Grupo Alimentos</TableHead>
+                <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Proveedor</TableHead>
+                <TableHead className="text-right font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Existencias</TableHead>
+                <TableHead className="text-right font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

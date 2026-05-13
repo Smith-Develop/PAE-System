@@ -3,7 +3,7 @@ import { PurchaseList } from "@/components/compras/purchase-list";
 import { Receipt } from "lucide-react";
 
 export default async function ComprasPage() {
-  const [purchases, products, operators] = await Promise.all([
+  const [purchases, products, operators, clients] = await Promise.all([
     prisma.purchase.findMany({
       include: {
         product: {
@@ -13,6 +13,7 @@ export default async function ComprasPage() {
           }
         },
         operator: true,
+        client: true,
       },
       orderBy: { fechaCompra: "desc" },
     }),
@@ -27,6 +28,9 @@ export default async function ComprasPage() {
     }),
     prisma.operator.findMany({
       orderBy: { nombreOperador: "asc" },
+    }),
+    prisma.client.findMany({
+      orderBy: { nombre: "asc" },
     }),
   ]);
 
@@ -46,7 +50,8 @@ export default async function ComprasPage() {
       <PurchaseList 
         initialPurchases={purchases} 
         products={products} 
-        operators={operators} 
+        operators={operators}
+        clients={clients}
       />
     </div>
   );

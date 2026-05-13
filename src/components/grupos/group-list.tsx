@@ -119,10 +119,10 @@ export function GroupList({ initialGroups }: GroupListProps) {
           <Table className="min-w-[400px] table-fixed">
           <TableHeader className="bg-slate-50/80">
             <TableRow>
-              <TableHead className="font-bold text-primary py-4 w-[30%]">Nombre del Grupo</TableHead>
-              <TableHead className="font-bold text-primary py-4 w-[45%]">Descripción / Items</TableHead>
-              <TableHead className="text-center font-bold text-primary py-4 w-[10%]">Ítems</TableHead>
-              <TableHead className="text-right font-bold text-primary py-4 w-[15%]">Acciones</TableHead>
+              <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight w-[30%]">Nombre del Grupo</TableHead>
+              <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight w-[45%]">Descripción / Items</TableHead>
+              <TableHead className="text-center font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight w-[10%]">Ítems</TableHead>
+              <TableHead className="text-right font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight w-[15%]">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

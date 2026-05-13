@@ -304,11 +304,11 @@ export function SettingsPanel({ user }: SettingsPanelProps) {
                 <Table className="min-w-[600px]">
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Nombre</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Rol</TableHead>
-                      <TableHead>Estado</TableHead>
-                      <TableHead className="text-right">Acciones</TableHead>
+                      <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Nombre</TableHead>
+                      <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Email</TableHead>
+                      <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Rol</TableHead>
+                      <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Estado</TableHead>
+                      <TableHead className="text-right font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Acciones</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -444,11 +444,11 @@ export function SettingsPanel({ user }: SettingsPanelProps) {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="w-[160px]">Fecha</TableHead>
-                          <TableHead>Usuario</TableHead>
-                          <TableHead className="w-[90px]">Acción</TableHead>
-                          <TableHead>Entidad</TableHead>
-                          <TableHead className="hidden md:table-cell">Detalle</TableHead>
+                          <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight w-[160px]">Fecha</TableHead>
+                          <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Usuario</TableHead>
+                          <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight w-[90px]">Acción</TableHead>
+                          <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Entidad</TableHead>
+                          <TableHead className="hidden md:table-cell font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Detalle</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>

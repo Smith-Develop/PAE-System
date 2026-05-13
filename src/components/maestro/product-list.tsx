@@ -151,12 +151,12 @@ export function ProductList({ products, masterProducts, providers, foodGroups }:
           <Table className="min-w-[650px] table-fixed">
             <TableHeader className="bg-slate-50/80">
               <TableRow className="hover:bg-transparent">
-                <TableHead className="w-[300px] font-bold text-primary py-4">Producto / Marca</TableHead>
-                <TableHead className="font-bold text-primary py-4">Grupo Alimentos</TableHead>
-                <TableHead className="font-bold text-primary py-4">Proveedor</TableHead>
-                <TableHead className="font-bold text-primary py-4">Reg. Sanitario</TableHead>
-                <TableHead className="text-right font-bold text-primary py-4">Stock Actual</TableHead>
-                <TableHead className="text-right font-bold text-primary py-4">Acciones</TableHead>
+                <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight w-[300px]">Producto / Marca</TableHead>
+                <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Grupo Alimentos</TableHead>
+                <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Proveedor</TableHead>
+                <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Reg. Sanitario</TableHead>
+                <TableHead className="text-right font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Stock Actual</TableHead>
+                <TableHead className="text-right font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

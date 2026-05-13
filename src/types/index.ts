@@ -216,12 +216,15 @@ export interface Menu {
 export interface Purchase {
   id: string;
   fechaCompra: Date | string;
+  precioUnitario: number;
   cantidadComprada: number;
   valorTotal: number;
   productId: string;
   product?: Product;
   operatorId?: string | null;
   operator?: Operator | null;
+  clientId?: string | null;
+  client?: Client | null;
   createdAt?: Date;
   updatedAt?: Date;
 }

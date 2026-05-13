@@ -312,10 +312,10 @@ export function ProductsByGroup({ masterProducts, foodGroups }: ProductsByGroupP
           <Table className="min-w-[400px] table-fixed">
             <TableHeader className="bg-slate-50/80">
               <TableRow>
-                <TableHead className="font-bold text-primary py-4 w-[30%]">Nombre</TableHead>
-                <TableHead className="font-bold text-primary py-4 w-[25%]">Grupo</TableHead>
-                <TableHead className="font-bold text-primary py-4 w-[20%]">Unidad</TableHead>
-                <TableHead className="text-right font-bold text-primary py-4 w-[25%]">Acciones</TableHead>
+                <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight w-[30%]">Nombre</TableHead>
+                <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight w-[25%]">Grupo</TableHead>
+                <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight w-[20%]">Unidad</TableHead>
+                <TableHead className="text-right font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight w-[25%]">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

@@ -319,6 +319,7 @@ model OrderMaterial {
 model Purchase {
   id               String   @id @default(cuid())
   fechaCompra      DateTime // Fecha exacta de la factura
+  precioUnitario   Float    @default(0)
   cantidadComprada Float    // En la unidad del producto
   valorTotal       Float    // Valor en pesos colombianos
 

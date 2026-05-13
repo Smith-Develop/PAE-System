@@ -58,11 +58,11 @@ export function ReportTable({ reportData }: ReportTableProps) {
         <Table className="relative min-w-[2500px] border-collapse">
           <TableHeader className="bg-slate-50 sticky top-0 z-30 shadow-sm">
             <TableRow className="hover:bg-transparent border-b-2 border-primary/10">
-              <TableHead className="font-bold text-primary sticky left-0 bg-slate-50 w-[60px] z-40 border-r text-center">
+              <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight sticky left-0 bg-slate-50 w-[60px] z-40 border-r text-center">
                 #
               </TableHead>
               {REPORT_COLUMNS.map((col, i) => (
-                <TableHead key={i} className="font-bold text-primary whitespace-nowrap px-4 py-3 text-xs uppercase tracking-wider border-r last:border-r-0">
+                <TableHead key={i} className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight uppercase tracking-wider border-r last:border-r-0">
                   {col}
                 </TableHead>
               ))}

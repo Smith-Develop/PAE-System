@@ -134,11 +134,11 @@ export function OperatorList({ initialOperators }: OperatorListProps) {
         <Table className="min-w-[550px] table-fixed">
           <TableHeader>
             <TableRow>
-              <TableHead>Operador</TableHead>
-              <TableHead>NIT</TableHead>
-              <TableHead>Atención/Modalidad</TableHead>
-              <TableHead>Ubicación Bodega</TableHead>
-              <TableHead className="text-right">Acciones</TableHead>
+              <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Operador</TableHead>
+              <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">NIT</TableHead>
+              <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Atención/Modalidad</TableHead>
+              <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Ubicación Bodega</TableHead>
+              <TableHead className="text-right font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

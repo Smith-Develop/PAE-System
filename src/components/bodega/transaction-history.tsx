@@ -62,10 +62,10 @@ export function TransactionHistory({ productId }: TransactionHistoryProps) {
       <Table>
         <TableHeader className="sticky top-0 bg-white z-10">
           <TableRow>
-            <TableHead>Fecha</TableHead>
-            <TableHead>Tipo</TableHead>
-            <TableHead className="text-right">Cantidad</TableHead>
-            <TableHead>Concepto</TableHead>
+            <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Fecha</TableHead>
+            <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Tipo</TableHead>
+            <TableHead className="text-right font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Cantidad</TableHead>
+            <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">Concepto</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

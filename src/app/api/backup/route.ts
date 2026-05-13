@@ -29,6 +29,7 @@ export async function GET() {
       prisma.product.findMany(),
       prisma.purchase.findMany(),
       prisma.stockTransaction.findMany(),
+      prisma.log.findMany(),
     ];
 
     const results = await Promise.all(tables);
@@ -39,7 +40,7 @@ export async function GET() {
       userName: session.user.name || "",
       action: "BACKUP",
       entity: "backup",
-      details: JSON.stringify({ tables: 18 }),
+      details: JSON.stringify({ tables: 19 }),
     });
 
     const backup = {
@@ -51,6 +52,7 @@ export async function GET() {
         dishIngredients: results[9], menus: results[10], menuDishes: results[11],
         orders: results[12], orderItems: results[13], orderMaterials: results[14],
         products: results[15], purchases: results[16], stockTransactions: results[17],
+        logs: results[18],
       },
     };
 
@@ -90,6 +92,7 @@ export async function POST(request: Request) {
 
     await prisma.$transaction(async (tx) => {
       await tx.stockTransaction.deleteMany();
+      await tx.log.deleteMany();
       await tx.orderMaterial.deleteMany();
       await tx.orderItem.deleteMany();
       await tx.order.deleteMany();
@@ -126,6 +129,7 @@ export async function POST(request: Request) {
       if (d.products?.length) await tx.product.createMany({ data: d.products });
       if (d.purchases?.length) await tx.purchase.createMany({ data: d.purchases });
       if (d.stockTransactions?.length) await tx.stockTransaction.createMany({ data: d.stockTransactions });
+      if (d.logs?.length) await tx.log.createMany({ data: d.logs });
     });
 
     return NextResponse.json({ message: "Base de datos restaurada" });

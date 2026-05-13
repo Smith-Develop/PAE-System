@@ -203,8 +203,8 @@ export function ComponentList({ components }: ComponentListProps) {
         </Dialog>
       </div>
 
-      <div className="rounded-xl border bg-white shadow-lg overflow-x-auto">
-        <Table className="min-w-[350px] table-fixed">
+      <div className="rounded-xl border bg-white shadow-lg">
+        <Table className="table-fixed w-full">
           <TableHeader className="bg-slate-50/80">
             <TableRow className="hover:bg-transparent">
               <TableHead className="font-bold text-primary py-4 w-full">

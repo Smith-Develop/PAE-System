@@ -179,7 +179,7 @@ export function PurchaseList({ initialPurchases, products: initialProducts, oper
                 setShowMapper(false);
                 setShowScanner(false);
                 toast.success("Factura guardada exitosamente");
-                router.refresh();
+                setTimeout(() => router.refresh(), 300);
               }}
               onCancel={() => {
                 setScannedItems([]);

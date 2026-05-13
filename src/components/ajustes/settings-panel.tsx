@@ -6,7 +6,7 @@ import {
   User, Key, Save, Download, Upload, Database, AlertTriangle,
   Users, Plus, Edit, Trash2, Shield, Mail, Wrench, Package, Truck,
   Building, Layers, ChefHat, ClipboardList, Calculator, Receipt, Box,
-  ScrollText, Search, ChevronLeft, ChevronRight,
+  ScrollText, Search, ChevronLeft, ChevronRight, Sparkles, CheckCircle, XCircle,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -65,6 +65,18 @@ export function SettingsPanel({ user }: SettingsPanelProps) {
   const [uRoleId, setURoleId] = useState("");
   const [uActive, setUActive] = useState(true);
   const [loadingUser, setLoadingUser] = useState(false);
+  // AI
+  const [aiStatus, setAiStatus] = useState<{ enabled: boolean; checking: boolean }>({ enabled: false, checking: true });
+
+  const fetchAiStatus = async () => {
+    try {
+      const res = await fetch("/api/ai-status");
+      const data = await res.json();
+      setAiStatus({ enabled: data.enabled, checking: false });
+    } catch {
+      setAiStatus({ enabled: false, checking: false });
+    }
+  };
 
   const fetchUsers = async () => {
     try {
@@ -76,7 +88,7 @@ export function SettingsPanel({ user }: SettingsPanelProps) {
     } catch {}
   };
 
-  useEffect(() => { fetchUsers(); }, []);
+  useEffect(() => { fetchUsers(); fetchAiStatus(); }, []);
 
   const fetchLogs = async (page = 1, filter = "") => {
     if (user.role !== "ADMIN") return;
@@ -215,6 +227,37 @@ export function SettingsPanel({ user }: SettingsPanelProps) {
 
   return (
     <div className="max-w-4xl mx-auto">
+      {/* Diagnostico IA */}
+      {user.role === "ADMIN" && (
+        <Card className="mb-6 border-blue-200">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Sparkles className="h-5 w-5 text-primary" />
+              <div>
+                <p className="text-sm font-bold">IA — Gemini Vision</p>
+                <p className="text-xs text-muted-foreground">
+                  {aiStatus.checking ? "Verificando..." : aiStatus.enabled ? "Conectada y funcionando" : "No configurada — agrega GEMINI_API_KEY en Vercel"}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {aiStatus.checking ? (
+                <Badge variant="outline" className="text-xs">Verificando...</Badge>
+              ) : aiStatus.enabled ? (
+                <Badge className="bg-green-100 text-green-700 border-green-200 flex items-center gap-1">
+                  <CheckCircle className="h-3.5 w-3.5" /> Activa
+                </Badge>
+              ) : (
+                <Badge variant="destructive" className="flex items-center gap-1">
+                  <XCircle className="h-3.5 w-3.5" /> Inactiva
+                </Badge>
+              )}
+              <Button variant="ghost" size="sm" onClick={fetchAiStatus} className="text-xs h-7">Revisar</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Tabs defaultValue="profile">
         <TabsList className="mb-6 flex-wrap h-auto gap-1">
           <TabsTrigger value="profile"><User className="h-4 w-4 mr-2" />Perfil</TabsTrigger>

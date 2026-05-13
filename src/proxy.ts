@@ -10,7 +10,7 @@ export async function proxy(request: NextRequest) {
   const session = await auth();
   const { pathname } = request.nextUrl;
 
-  const publicPaths = ["/login", "/api/auth", "/manifest.json", "/sw.js", "/icons/", "/logo.png"];
+  const publicPaths = ["/login", "/api/auth", "/api/ai-status", "/manifest.json", "/sw.js", "/icons/", "/logo.png"];
   const isPublic = publicPaths.some((p) => pathname.startsWith(p));
 
   if (!session && !isPublic) {

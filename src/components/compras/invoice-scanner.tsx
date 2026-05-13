@@ -3,7 +3,6 @@
 import { useState, useRef, useCallback } from "react";
 import { Upload, FileImage, Scan, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
-import { AI_ENABLED } from "@/lib/ai-config";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,8 +18,6 @@ export function InvoiceScanner({ onItemsExtracted }: InvoiceScannerProps) {
   const [isScanning, setIsScanning] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  if (!AI_ENABLED) return null;
 
   const handleFile = useCallback((selectedFile: File) => {
     const validTypes = ["image/jpeg", "image/png", "application/pdf"];

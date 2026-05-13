@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Edit, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -27,7 +27,6 @@ import {
 import { PurchaseForm } from "./purchase-form";
 import { PurchaseFormData } from "@/lib/validations";
 import { Purchase, Product, Operator, Client } from "@/types";
-import { AI_ENABLED } from "@/lib/ai-config";
 import { InvoiceScanner } from "./invoice-scanner";
 import { InvoiceMapper } from "./invoice-mapper";
 
@@ -51,6 +50,14 @@ export function PurchaseList({ initialPurchases, products: initialProducts, oper
   const [invoiceOpId, setInvoiceOpId] = useState("");
   const [invoiceClientId, setInvoiceClientId] = useState("");
   const [invoiceFecha, setInvoiceFecha] = useState("");
+  const [aiEnabled, setAiEnabled] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/ai-status")
+      .then((r) => r.json())
+      .then((d) => setAiEnabled(d.enabled))
+      .catch(() => {});
+  }, []);
 
   const filteredPurchases = initialPurchases.filter(
     (p) =>
@@ -125,7 +132,7 @@ export function PurchaseList({ initialPurchases, products: initialProducts, oper
           onChange={(e) => setSearchTerm(e.target.value)}
           className="max-w-md bg-white"
         />
-        {AI_ENABLED && (
+        {aiEnabled && (
           <Button variant="outline" size="sm" onClick={() => setShowScanner(!showScanner)}>
             <Upload className="mr-2 h-4 w-4" />
             {showScanner ? "Ocultar Escáner" : "Escanear Factura"}
@@ -157,7 +164,7 @@ export function PurchaseList({ initialPurchases, products: initialProducts, oper
       </div>
 
       {/* Escáner de Facturas IA */}
-      {AI_ENABLED && showScanner && (
+      {aiEnabled && showScanner && (
         <div className="space-y-4">
           {!showMapper && (
             <InvoiceScanner

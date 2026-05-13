@@ -21,44 +21,50 @@ const EMPLOYEE_PERMISSIONS = {
 };
 
 async function main() {
-  console.log("=== PAE SEED ===");
+  console.log("=== PAE SEED MULTI-TENANT ===\n");
 
-  const adminRole = await prisma.role.upsert({
-    where: { name: "ADMIN" },
-    update: { permissions: JSON.stringify(ADMIN_PERMISSIONS) },
-    create: { name: "ADMIN", description: "Administrador del sistema", permissions: JSON.stringify(ADMIN_PERMISSIONS) },
+  // 1. Crear Tenant "PAE Antioquia"
+  console.log("Creando tenant...");
+  const tenant = await prisma.tenant.create({
+    data: { name: "PAE Antioquia", slug: "pae-antioquia", active: true, plan: "enterprise" },
   });
-  console.log("Rol:", adminRole.name);
 
-  const empRole = await prisma.role.upsert({
-    where: { name: "EMPLEADO" },
-    update: { permissions: JSON.stringify(EMPLOYEE_PERMISSIONS) },
-    create: { name: "EMPLEADO", description: "Empleado operativo", permissions: JSON.stringify(EMPLOYEE_PERMISSIONS) },
-  });
-  console.log("Rol:", empRole.name);
+  // 2. Crear roles
+  console.log("Creando roles...");
+  const [superAdminRole, adminRole, empRole] = await Promise.all([
+    prisma.role.create({ data: { name: "SUPER_ADMIN", description: "Super Administrador del sistema", permissions: JSON.stringify(ADMIN_PERMISSIONS) } }),
+    prisma.role.create({ data: { name: "ADMIN", description: "Administrador del tenant", permissions: JSON.stringify(ADMIN_PERMISSIONS) } }),
+    prisma.role.create({ data: { name: "EMPLEADO", description: "Empleado operativo", permissions: JSON.stringify(EMPLOYEE_PERMISSIONS) } }),
+  ]);
 
-  const adminPassword = await hash("admin123", 12);
-  await prisma.user.upsert({
-    where: { email: "admin@pae.gov.co" },
-    update: {},
-    create: { email: "admin@pae.gov.co", name: "Administrador PAE", password: adminPassword, roleId: adminRole.id, active: true },
-  });
-  console.log("Usuario: admin@pae.gov.co (admin123)");
+  // 3. Crear usuarios
+  console.log("Creando usuarios...");
+  const superPwd = await hash("super123", 12);
+  const adminPwd = await hash("admin123", 12);
+  const empPwd = await hash("empleado123", 12);
 
-  const empPassword = await hash("empleado123", 12);
-  await prisma.user.upsert({
-    where: { email: "empleado@pae.gov.co" },
-    update: {},
-    create: { email: "empleado@pae.gov.co", name: "Empleado PAE", password: empPassword, roleId: empRole.id, active: true },
-  });
-  console.log("Usuario: empleado@pae.gov.co (empleado123)");
+  await prisma.user.create({ data: { email: "super@pae.gov.co", name: "Super Admin", password: superPwd, roleId: superAdminRole.id, active: true } });
+  console.log("  super@pae.gov.co (super123)");
 
+  await prisma.user.create({ data: { email: "admin@pae.gov.co", name: "Administrador PAE", password: adminPwd, roleId: adminRole.id, active: true, tenantId: tenant.id } });
+  console.log("  admin@pae.gov.co (admin123)");
+
+  await prisma.user.create({ data: { email: "empleado@pae.gov.co", name: "Empleado PAE", password: empPwd, roleId: empRole.id, active: true, tenantId: tenant.id } });
+  console.log("  empleado@pae.gov.co (empleado123)");
+
+  // 4. Componentes base
+  console.log("Creando componentes...");
   const names = ["Proteína", "Cereal", "Fruta", "Bebida", "Complemento", "Sopas", "Ensalada", "Postre"];
   for (const name of names) {
-    await prisma.component.upsert({ where: { name }, update: {}, create: { name } });
+    await prisma.component.create({ data: { name, tenantId: tenant.id } });
   }
-  console.log(`${names.length} componentes OK`);
-  console.log("=== SEED COMPLETADO ===");
+
+  console.log("\n=== SEED COMPLETADO ===");
+  console.log(`Tenant: ${tenant.name} (${tenant.slug})`);
+  console.log("Credenciales:");
+  console.log("  Super Admin: super@pae.gov.co / super123");
+  console.log("  Admin:       admin@pae.gov.co / admin123");
+  console.log("  Empleado:    empleado@pae.gov.co / empleado123");
 }
 
-main().catch((e) => { console.error(e); process.exit(1); }).finally(() => prisma.$disconnect());
+main().catch(console.error).finally(() => prisma.$disconnect());

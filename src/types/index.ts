@@ -95,6 +95,17 @@ export type UnitMeasure = (typeof UNIT_OPTIONS)[number];
 
 // --- Entidades Base ---
 
+export interface Tenant {
+  id: string;
+  name: string;
+  slug: string;
+  logo?: string | null;
+  active: boolean;
+  plan: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
 export interface Operator {
   id: string;
   nombreOperador: string;

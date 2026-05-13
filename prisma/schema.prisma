@@ -12,6 +12,34 @@ datasource db {
 }
 
 // ============================================
+// MULTI-TENANT
+// ============================================
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  logo      String?
+  active    Boolean  @default(true)
+  plan      String   @default("free")
+
+  users     User[]
+  clients   Client[]
+  operators Operator[]
+  providers Provider[]
+  foodGroups FoodGroup[]
+  masterProducts MasterProduct[]
+  products  Product[]
+  components Component[]
+  dishes    Dish[]
+  menus     Menu[]
+  orders    Order[]
+  purchases         Purchase[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================
 // AUTENTICACIÓN Y ROLES
 // ============================================
 model User {
@@ -22,8 +50,12 @@ model User {
   roleId    String
   role      Role     @relation(fields: [roleId], references: [id])
   active    Boolean  @default(true)
+  tenantId  String?
+  tenant    Tenant?  @relation(fields: [tenantId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
 }
 
 model Role {
@@ -32,8 +64,8 @@ model Role {
   description String?
   permissions String   // JSON string con permisos por módulo
   users       User[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ============================================
@@ -44,6 +76,7 @@ model Log {
   userId    String
   userEmail String
   userName  String
+  tenantId  String?
   action    String   // CREATE, UPDATE, DELETE, LOGIN, BACKUP, RESTORE, PASSWORD, MAINTENANCE
   entity    String   // provider, product, dish, menu, order, user, etc.
   entityId  String?  // ID del registro afectado
@@ -68,12 +101,16 @@ model Client {
   contacto       String   @default("")
   telefono       String   @default("")
   correo         String   @default("")
+  tenantId       String?
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
 
   orders         Order[]
   purchases      Purchase[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
 }
 
 // ============================================
@@ -89,10 +126,14 @@ model Operator {
   municipioBodega   String   @default("")
   contactoBodega    String   @default("")
   telefonoBodega    String   @default("")
+  tenantId          String?
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
   orders            Order[]
   purchases         Purchase[]
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+
+  @@index([tenantId])
 }
 
 // ============================================
@@ -116,11 +157,15 @@ model Provider {
   fechaVisita              String  @default("")
   conceptoSanitario        String  @default("")
   entidadEmisora           String  @default("")
+  tenantId                 String?
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
 
   products                 Product[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
 }
 
 // ============================================
@@ -129,11 +174,13 @@ model Provider {
 
 model MasterProduct {
   id                String  @id @default(cuid())
-  nombre            String  @unique // Ejemplo: "MARACUYA", "ARROZ"
+  nombre            String  // Ejemplo: "MARACUYA", "ARROZ"
   unidadMedida      String  // Kilogramos, Litros, etc.
   
   foodGroupId       String
   foodGroup         FoodGroup @relation(fields: [foodGroupId], references: [id])
+  tenantId          String?
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
 
   // Relaciones
   providerProducts  Product[] // Los productos específicos por proveedor
@@ -142,16 +189,24 @@ model MasterProduct {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([nombre, tenantId])
 }
 
 model FoodGroup {
   id             String          @id @default(cuid())
-  name           String          @unique
+  name           String
   description    String?         // Descripción larga del grupo alimenticio
+  tenantId       String?
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
   masterProducts MasterProduct[]
   
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+
+  @@unique([name, tenantId])
+
+  @@index([tenantId])
 }
 
 model Product {
@@ -170,6 +225,8 @@ model Product {
   
   // Inventario por proveedor
   currentStock      Float   @default(0)
+  tenantId          String?
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
 
   purchases         Purchase[]
   stockTransactions StockTransaction[]
@@ -178,6 +235,7 @@ model Product {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([tenantId])
   @@unique([masterProductId, providerId, descripcionMarca])
 }
 
@@ -189,6 +247,7 @@ model StockTransaction {
   
   productId   String
   product     Product  @relation(fields: [productId], references: [id])
+  tenantId    String?
 
   createdAt   DateTime @default(now())
 
@@ -200,12 +259,17 @@ model StockTransaction {
 // ============================================
 model Component {
   id     String @id @default(cuid())
-  name   String @unique // Proteína, Cereal, Fruta, Bebida, etc.
+  name   String // Proteína, Cereal, Fruta, Bebida, etc.
+  tenantId String?
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
 
   dishes Dish[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([name, tenantId])
+  @@index([tenantId])
 }
 
 model Dish {
@@ -214,12 +278,16 @@ model Dish {
   componenteId  String
   componente    Component        @relation(fields: [componenteId], references: [id])
   descripcion   String?
+  tenantId      String?
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
 
   ingredients DishIngredient[]
   menuDishes  MenuDish[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
 }
 
 model DishIngredient {
@@ -230,6 +298,7 @@ model DishIngredient {
   dish             Dish          @relation(fields: [dishId], references: [id], onDelete: Cascade)
   masterProductId  String
   masterProduct    MasterProduct @relation(fields: [masterProductId], references: [id])
+  tenantId         String?
 
   createdAt DateTime @default(now())
 
@@ -241,12 +310,16 @@ model Menu {
   id          String       @id @default(cuid())
   nombre      String       // "Menú No. 1"
   descripcion String?
+  tenantId    String?
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
 
   dishes      MenuDish[]
   orderItems  OrderItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
 }
 
 model MenuDish {
@@ -255,8 +328,9 @@ model MenuDish {
 
   menuId String
   menu   Menu   @relation(fields: [menuId], references: [id], onDelete: Cascade)
-  dishId String
-  dish   Dish   @relation(fields: [dishId], references: [id])
+  dishId   String
+  dish     Dish   @relation(fields: [dishId], references: [id])
+  tenantId String?
 
   @@unique([menuId, dishId])
   @@index([dishId])
@@ -275,11 +349,15 @@ model Order {
   
   operatorId  String?
   operator    Operator?   @relation(fields: [operatorId], references: [id])
+  tenantId    String?
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
 
   items       OrderItem[]
   materials   OrderMaterial[]
 
   createdAt DateTime @default(now())
+
+  @@index([tenantId])
 }
 
 model OrderItem {
@@ -290,6 +368,7 @@ model OrderItem {
   order    Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
   menuId   String
   menu     Menu   @relation(fields: [menuId], references: [id])
+  tenantId String?
 
   @@index([orderId])
   @@index([menuId])
@@ -305,6 +384,7 @@ model OrderMaterial {
   
   productId       String // La variante específica de proveedor elegida
   product         Product @relation(fields: [productId], references: [id])
+  tenantId        String?
   
   cantidadTotal   Float
 
@@ -331,10 +411,13 @@ model Purchase {
 
   clientId   String?
   client     Client?   @relation(fields: [clientId], references: [id])
+  tenantId   String?
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([tenantId])
   @@index([productId])
   @@index([operatorId])
   @@index([clientId])

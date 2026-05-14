@@ -81,7 +81,7 @@ async function main() {
   for (const m of aiModels) {
     const exists = await prisma.aIModel.findUnique({ where: { name: m.name } });
     if (!exists) {
-      await prisma.aIModel.create({ data: { name: m.name, provider: m.provider, modelId: m.modelId, apiKey: process.env.GEMINI_API_KEY || "", baseUrl: m.baseUrl || null, isDefault: m.isDefault || false, active: true } });
+      await prisma.aIModel.create({ data: { name: m.name, provider: m.provider, modelId: m.modelId, apiKey: "", baseUrl: m.baseUrl || null, isDefault: m.isDefault || false, active: true } });
     }
   }
   console.log(`  ${aiModels.length} modelos`);

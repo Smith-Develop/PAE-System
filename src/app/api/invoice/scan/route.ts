@@ -52,29 +52,10 @@ export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-  // Buscar modelo IA configurado
+  // Buscar modelo IA configurado en DB
   const aiModel = await prisma.aIModel.findFirst({ where: { isDefault: true, active: true } });
-
-  // Si no hay modelo configurado, usar fallback del .env
   if (!aiModel) {
-    const envKey = process.env.GEMINI_API_KEY;
-    if (!envKey) return NextResponse.json({ error: "No hay modelo IA configurado. Agrega uno en Panel Super Admin → Modelos IA." }, { status: 501 });
-
-    // Fallback: usar Gemini desde .env
-    try {
-      const body = await request.json();
-      const { image } = body;
-      if (!image) return NextResponse.json({ error: "Imagen requerida" }, { status: 400 });
-
-      const base64Data = image.replace(/^data:image\/\w+;base64,/, "").replace(/^data:application\/pdf;base64,/, "");
-      const mimeType = image.startsWith("data:application/pdf") ? "application/pdf" : "image/jpeg";
-      const text = await scanWithGoogle(envKey, "gemini-2.5-flash", base64Data, mimeType);
-      const cleanText = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-      const parsed = JSON.parse(cleanText);
-      return NextResponse.json({ items: parsed.items || [] });
-    } catch (e: any) {
-      return NextResponse.json({ error: "Error al escanear: " + (e.message || "desconocido") }, { status: 500 });
-    }
+    return NextResponse.json({ error: "No hay modelo IA configurado. Agrega uno en Panel Super Admin → Modelos IA." }, { status: 501 });
   }
 
   // Verificar límites de tenant

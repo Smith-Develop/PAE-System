@@ -4,34 +4,20 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-  }
+  if (!session?.user?.id) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  if (!session.user.tenantId) return NextResponse.json({ name: null });
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: session.user.tenantId },
     select: {
-      tenantId: true,
-      tenant: {
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          planId: true,
-          plan: { select: { name: true } },
-          expirationDate: true,
-          maxUsers: true,
-          aiScansLimit: true,
-          aiScansUsed: true,
-          active: true,
-        },
-      },
+      id: true, name: true, slug: true, active: true,
+      plan: { select: { id: true, name: true, maxUsers: true, aiScansLimit: true, price: true } },
+      expirationDate: true, maxUsers: true, aiScansLimit: true, aiScansUsed: true,
+      _count: { select: { users: true } },
     },
   });
 
-  if (!user?.tenant) {
-    return NextResponse.json({ tenant: null });
-  }
+  if (!tenant) return NextResponse.json({ name: null });
 
-  return NextResponse.json({ tenant: user.tenant });
+  return NextResponse.json(tenant);
 }

@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Combobox } from "@/components/ui/combobox";
+import { PlanInfoCard } from "@/components/ajustes/plan-info-card";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
@@ -274,6 +275,7 @@ export function SettingsPanel({ user }: SettingsPanelProps) {
 
         {/* PERFIL */}
         <TabsContent value="profile" className="space-y-6 mt-0">
+          {user.role !== "SUPER_ADMIN" && <PlanInfoCard />}
           <Card>
             <CardHeader>
               <CardTitle><User className="h-5 w-5 inline mr-2" />Información del Perfil</CardTitle>

@@ -13,7 +13,9 @@ import { Separator } from "@/components/ui/separator";
 
 interface Tenant {
   id: string; name: string; slug: string;
-  plan: string; planId?: string; active: boolean;
+  plan?: { name: string } | null;
+  planId?: string | null;
+  active: boolean;
   maxUsers: number; aiScansLimit: number; aiScansUsed: number;
   expirationDate: string | null;
   _count: { users: number };
@@ -156,7 +158,7 @@ export function TenantDetailModal({ open, tenant, onClose }: Props) {
           <DialogTitle className="flex items-center gap-2 text-lg">
             {tenant.name}
             <code className="text-xs font-mono text-muted-foreground bg-slate-100 px-1.5 py-0.5 rounded">{tenant.slug}</code>
-            <Badge variant="outline">{tenant.plan}</Badge>
+            <Badge variant="outline">{tenant.plan?.name || "Sin plan"}</Badge>
             <Badge variant={tenant.active ? "secondary" : "destructive"}>{tenant.active ? "Activo" : "Inactivo"}</Badge>
           </DialogTitle>
         </DialogHeader>

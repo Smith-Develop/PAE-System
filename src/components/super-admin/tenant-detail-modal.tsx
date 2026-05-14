@@ -152,6 +152,7 @@ export function TenantDetailModal({ open, tenant, onClose }: Props) {
   if (!tenant) return null;
 
   return (
+    <>
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
       <DialogContent className="max-w-[95vw] sm:max-w-[720px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -306,33 +307,34 @@ export function TenantDetailModal({ open, tenant, onClose }: Props) {
           )}
         </div>
       </DialogContent>
-
-      {/* Renew sub-modal */}
-      <Dialog open={showRenew} onOpenChange={setShowRenew}>
-        <DialogContent className="max-w-[95vw] sm:max-w-[400px]">
-          <DialogHeader><DialogTitle>Renovar Suscripción - {tenant.name}</DialogTitle></DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground uppercase">Plan</p>
-              <select className="w-full border rounded px-3 py-2 text-sm" value={renewPlanId} onChange={(e) => {
-                setRenewPlanId(e.target.value);
-                const selected = plans.find((p) => p.id === e.target.value);
-                if (selected) setRenewAmount(selected.price * selected.durationDays);
-              }}>
-                {plans.map((p) => <option key={p.id} value={p.id}>{p.name} ({p.durationDays}d)</option>)}
-              </select>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground uppercase">Monto Total (COP)</p>
-              <Input type="number" min={0} step={1000} value={renewAmount} onChange={(e) => setRenewAmount(Number(e.target.value))} />
-            </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => setShowRenew(false)}>Cancelar</Button>
-              <Button onClick={handleRenew} disabled={renewing}>{renewing ? "Renovando..." : "Renovar"}</Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </Dialog>
+
+    {/* Renew sub-modal (fuera del Dialog principal) */}
+    <Dialog open={showRenew} onOpenChange={setShowRenew}>
+      <DialogContent className="max-w-[95vw] sm:max-w-[400px]">
+        <DialogHeader><DialogTitle>Renovar Suscripción - {tenant.name}</DialogTitle></DialogHeader>
+        <div className="space-y-4 py-2">
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground uppercase">Plan</p>
+            <select className="w-full border rounded px-3 py-2 text-sm" value={renewPlanId} onChange={(e) => {
+              setRenewPlanId(e.target.value);
+              const selected = plans.find((p) => p.id === e.target.value);
+              if (selected) setRenewAmount(selected.price);
+            }}>
+              {plans.map((p) => <option key={p.id} value={p.id}>{p.name} ({p.durationDays}d)</option>)}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground uppercase">Monto Total (COP)</p>
+            <Input type="number" min={0} step={1000} value={renewAmount} onChange={(e) => setRenewAmount(Number(e.target.value))} />
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => setShowRenew(false)}>Cancelar</Button>
+            <Button onClick={handleRenew} disabled={renewing}>{renewing ? "Renovando..." : "Renovar"}</Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  </>
   );
 }

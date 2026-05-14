@@ -44,6 +44,7 @@ export default function LoginPage() {
         toast.error("Credenciales inválidas");
         setIsLoading(false);
       } else {
+        router.refresh();
         router.push("/");
       }
     } catch {

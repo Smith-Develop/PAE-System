@@ -179,8 +179,8 @@ export function PlanManager() {
               </div>
             </div>
             <div className="space-y-1">
-              <p className="text-xs text-muted-foreground uppercase">MercadoPago Plan ID (solo lectura)</p>
-              <Input value={mercadoPagoPlanId} onChange={(e) => setMercadoPagoPlanId(e.target.value)} placeholder="2c938084..." readOnly />
+              <p className="text-xs text-muted-foreground uppercase">MercadoPago Plan ID</p>
+              <Input value={mercadoPagoPlanId} onChange={(e) => setMercadoPagoPlanId(e.target.value)} placeholder="2c938084..." />
             </div>
             <div className="flex items-center gap-2">
               <Checkbox id="plan-active" checked={active} onCheckedChange={(c) => setActive(!!c)} />

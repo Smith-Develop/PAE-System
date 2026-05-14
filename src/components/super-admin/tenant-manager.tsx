@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Plus, Edit, Trash2, Building, ExternalLink } from "lucide-react";
+import { TenantDetailModal } from "@/components/super-admin/tenant-detail-modal";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -12,8 +13,11 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface Tenant {
-  id: string; name: string; slug: string; plan: string; active: boolean;
-  maxUsers: number; aiScansLimit: number; aiScansUsed: number;
+  id: string; name: string; slug: string; active: boolean;
+  maxUsers: number; plan?: { name: string } | null;
+  planId?: string | null;
+  aiScansLimit?: number; aiScansUsed?: number;
+  expirationDate?: string | null;
   _count: { users: number };
 }
 
@@ -25,11 +29,14 @@ export function TenantManager() {
   const [editing, setEditing] = useState<Tenant | null>(null);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
-  const [plan, setPlan] = useState("free");
+  const [planId, setPlanId] = useState("");
+  const [plansList, setPlansList] = useState<{id: string, name: string}[]>([]);
   const [active, setActive] = useState(true);
   const [maxUsers, setMaxUsers] = useState(5);
   const [aiScansLimit, setAiScansLimit] = useState(10);
   const [saving, setSaving] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
 
   const fetchTenants = async () => {
     try {
@@ -40,16 +47,17 @@ export function TenantManager() {
   };
 
   useEffect(() => { fetchTenants(); }, []);
+  useEffect(() => { fetch("/api/super-admin/plans").then(r=>r.json()).then(setPlansList).catch(()=>{}) }, []);
 
   const openCreate = () => {
-    setEditing(null); setName(""); setSlug(""); setPlan("free"); setActive(true);
+    setEditing(null); setName(""); setSlug(""); setPlanId(""); setActive(true);
     setMaxUsers(5); setAiScansLimit(10);
     setModalOpen(true);
   };
 
   const openEdit = (t: Tenant) => {
-    setEditing(t); setName(t.name); setSlug(t.slug); setPlan(t.plan); setActive(t.active);
-    setMaxUsers(t.maxUsers); setAiScansLimit(t.aiScansLimit);
+    setEditing(t); setName(t.name); setSlug(t.slug); setPlanId(t.planId || ""); setActive(t.active);
+    setMaxUsers(t.maxUsers); setAiScansLimit(t.aiScansLimit || 10);
     setModalOpen(true);
   };
 
@@ -59,7 +67,7 @@ export function TenantManager() {
     try {
       const url = editing ? `/api/super-admin/tenants/${editing.id}` : "/api/super-admin/tenants";
       const method = editing ? "PUT" : "POST";
-      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, slug, plan, active, maxUsers, aiScansLimit }) });
+      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, slug, planId, active, maxUsers, aiScansLimit }) });
       if (!res.ok) { const err = await res.json(); throw new Error(err.error); }
       toast.success(editing ? "Tenant actualizado" : "Tenant creado");
       setModalOpen(false); fetchTenants();
@@ -102,10 +110,10 @@ export function TenantManager() {
               </thead>
               <tbody>
                 {tenants.map((t) => (
-                  <tr key={t.id} className="border-b hover:bg-slate-50">
+                  <tr key={t.id} className="border-b hover:bg-slate-50 cursor-pointer" onClick={() => { setSelectedTenant(t); setDetailOpen(true); }}>
                     <td className="py-3 px-4 font-medium">{t.name}</td>
                     <td className="py-3 px-4 font-mono text-xs">{t.slug}</td>
-                    <td className="py-3 px-4"><Badge variant="outline">{t.plan}</Badge></td>
+                    <td className="py-3 px-4"><Badge variant="outline">{t.plan?.name || "Sin plan"}</Badge></td>
                     <td className="py-3 px-4 text-center text-xs">{t._count.users}/{t.maxUsers} users, {t.aiScansUsed}/{t.aiScansLimit} scans</td>
                     <td className="py-3 px-4 text-center">
                       <Badge variant={t.active ? "secondary" : "destructive"}>{t.active ? "Activo" : "Inactivo"}</Badge>
@@ -139,11 +147,9 @@ export function TenantManager() {
             </div>
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground uppercase">Plan</p>
-              <select className="w-full border rounded px-3 py-2 text-sm" value={plan} onChange={(e) => setPlan(e.target.value)}>
-                <option value="free">Free</option>
-                <option value="basic">Basic</option>
-                <option value="pro">Pro</option>
-                <option value="enterprise">Enterprise</option>
+              <select className="w-full border rounded px-3 py-2 text-sm" value={planId} onChange={(e) => setPlanId(e.target.value)}>
+                <option value="">Sin plan</option>
+                {plansList.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </div>
             <div className="space-y-1">
@@ -165,6 +171,8 @@ export function TenantManager() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <TenantDetailModal open={detailOpen} tenant={selectedTenant as any} onClose={() => { setDetailOpen(false); setSelectedTenant(null); }} />
     </div>
   );
 }

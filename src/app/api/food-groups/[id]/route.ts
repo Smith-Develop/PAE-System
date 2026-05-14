@@ -7,9 +7,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params;
     const { name, description } = await request.json();
-    const group = await prisma.foodGroup.update({ where: { id }, data: { name, description } });
-
     const session = await auth();
+    const tenantId = session?.user?.role === "SUPER_ADMIN" ? undefined : session?.user?.tenantId;
+    const whereClause: any = { id };
+    if (tenantId) whereClause.tenantId = tenantId;
+
+    const group = await prisma.foodGroup.update({ where: whereClause, data: { name, description } });
+
     await logAction({ userId: session?.user?.id || "", userEmail: session?.user?.email || "", userName: session?.user?.name || "", action: "UPDATE", entity: "foodGroup", entityId: id, details: JSON.stringify({ name }) });
 
     return NextResponse.json(group);
@@ -19,11 +23,15 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
+    const session = await auth();
+    const tenantId = session?.user?.role === "SUPER_ADMIN" ? undefined : session?.user?.tenantId;
+    const whereClause: any = { id };
+    if (tenantId) whereClause.tenantId = tenantId;
+
     const count = await prisma.masterProduct.count({ where: { foodGroupId: id } });
     if (count > 0) return NextResponse.json({ error: "Tiene productos asociados" }, { status: 400 });
-    await prisma.foodGroup.delete({ where: { id } });
+    await prisma.foodGroup.delete({ where: whereClause });
 
-    const session = await auth();
     await logAction({ userId: session?.user?.id || "", userEmail: session?.user?.email || "", userName: session?.user?.name || "", action: "DELETE", entity: "foodGroup", entityId: id });
 
     return NextResponse.json({ message: "Eliminado" });

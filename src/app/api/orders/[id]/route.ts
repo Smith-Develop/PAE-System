@@ -6,7 +6,12 @@ import { logAction } from "@/lib/audit";
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const order = await prisma.order.findUnique({ where: { id }, include: { materials: true } });
+    const session = await auth();
+    const tenantId = session?.user?.role === "SUPER_ADMIN" ? undefined : session?.user?.tenantId;
+    const whereClause: any = { id };
+    if (tenantId) whereClause.tenantId = tenantId;
+
+    const order = await prisma.order.findUnique({ where: whereClause, include: { materials: true } });
     if (!order) return NextResponse.json({ error: "Pedido no encontrado" }, { status: 404 });
 
     await prisma.$transaction(async (tx) => {
@@ -19,7 +24,6 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
       await tx.order.delete({ where: { id } });
     });
 
-    const session = await auth();
     await logAction({ userId: session?.user?.id || "", userEmail: session?.user?.email || "", userName: session?.user?.name || "", action: "DELETE", entity: "order", entityId: id });
 
     return NextResponse.json({ message: "Pedido eliminado" });

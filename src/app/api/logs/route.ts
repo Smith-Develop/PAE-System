@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getAuthTenantId } from "@/lib/tenant";
 
 export async function GET(request: Request) {
   const session = await auth();
@@ -19,6 +20,9 @@ export async function GET(request: Request) {
   if (action) where.action = action;
   if (entity) where.entity = entity;
   if (userId) where.userId = userId;
+
+  const tenantId = await getAuthTenantId();
+  if (tenantId) where.tenantId = tenantId;
 
   const [logs, total] = await Promise.all([
     prisma.log.findMany({

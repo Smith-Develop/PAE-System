@@ -11,9 +11,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const result = masterProductSchema.safeParse(body);
     if (!result.success) return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
 
-    const product = await prisma.masterProduct.update({ where: { id }, data: result.data });
-
     const session = await auth();
+    const tenantId = session?.user?.role === "SUPER_ADMIN" ? undefined : session?.user?.tenantId;
+    const whereClause: any = { id };
+    if (tenantId) whereClause.tenantId = tenantId;
+
+    const product = await prisma.masterProduct.update({ where: whereClause, data: result.data });
+
     await logAction({ userId: session?.user?.id || "", userEmail: session?.user?.email || "", userName: session?.user?.name || "", action: "UPDATE", entity: "masterProduct", entityId: id });
 
     return NextResponse.json(product);
@@ -23,11 +27,15 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
+    const session = await auth();
+    const tenantId = session?.user?.role === "SUPER_ADMIN" ? undefined : session?.user?.tenantId;
+    const whereClause: any = { id };
+    if (tenantId) whereClause.tenantId = tenantId;
+
     const count = await prisma.product.count({ where: { masterProductId: id } });
     if (count > 0) return NextResponse.json({ error: "Tiene productos de proveedor asociados" }, { status: 400 });
-    await prisma.masterProduct.delete({ where: { id } });
+    await prisma.masterProduct.delete({ where: whereClause });
 
-    const session = await auth();
     await logAction({ userId: session?.user?.id || "", userEmail: session?.user?.email || "", userName: session?.user?.name || "", action: "DELETE", entity: "masterProduct", entityId: id });
 
     return new NextResponse(null, { status: 204 });

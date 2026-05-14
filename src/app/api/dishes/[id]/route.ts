@@ -11,13 +11,20 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const result = dishSchema.safeParse(body);
     if (!result.success) return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
 
+    const session = await auth();
+    const tenantId = session?.user?.role === "SUPER_ADMIN" ? undefined : session?.user?.tenantId;
+    const whereClause: any = { id };
+    if (tenantId) whereClause.tenantId = tenantId;
+
+    const existing = await prisma.dish.findUnique({ where: whereClause });
+    if (!existing) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
+
     await prisma.dishIngredient.deleteMany({ where: { dishId: id } });
     const dish = await prisma.dish.update({
       where: { id }, data: { nombre: result.data.nombre, componenteId: result.data.componenteId, descripcion: result.data.descripcion, ingredients: { create: result.data.ingredients.map((i: any) => ({ masterProductId: i.masterProductId, cantidadBrutaUnitaria: i.cantidadBrutaUnitaria })) } },
       include: { componente: true, ingredients: { include: { masterProduct: true } } },
     });
 
-    const session = await auth();
     await logAction({ userId: session?.user?.id || "", userEmail: session?.user?.email || "", userName: session?.user?.name || "", action: "UPDATE", entity: "dish", entityId: id });
     return NextResponse.json(dish);
   } catch (error) { return NextResponse.json({ error: "Error al actualizar" }, { status: 500 }); }
@@ -26,11 +33,15 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
+    const session = await auth();
+    const tenantId = session?.user?.role === "SUPER_ADMIN" ? undefined : session?.user?.tenantId;
+    const whereClause: any = { id };
+    if (tenantId) whereClause.tenantId = tenantId;
+
     const count = await prisma.menuDish.count({ where: { dishId: id } });
     if (count > 0) return NextResponse.json({ error: "Está en menús" }, { status: 400 });
-    await prisma.dish.delete({ where: { id } });
+    await prisma.dish.delete({ where: whereClause });
 
-    const session = await auth();
     await logAction({ userId: session?.user?.id || "", userEmail: session?.user?.email || "", userName: session?.user?.name || "", action: "DELETE", entity: "dish", entityId: id });
     return new NextResponse(null, { status: 204 });
   } catch (error) { return NextResponse.json({ error: "Error al eliminar" }, { status: 500 }); }

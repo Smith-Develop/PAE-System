@@ -11,9 +11,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const result = providerSchema.safeParse(body);
     if (!result.success) return NextResponse.json({ error: "Datos inválidos", details: result.error.issues }, { status: 400 });
 
-    const provider = await prisma.provider.update({ where: { id }, data: result.data });
-
     const session = await auth();
+    const tenantId = session?.user?.role === "SUPER_ADMIN" ? undefined : session?.user?.tenantId;
+    const whereClause: any = { id };
+    if (tenantId) whereClause.tenantId = tenantId;
+
+    const provider = await prisma.provider.update({ where: whereClause, data: result.data });
+
     await logAction({ userId: session?.user?.id || "", userEmail: session?.user?.email || "", userName: session?.user?.name || "", action: "UPDATE", entity: "provider", entityId: id, details: JSON.stringify({ razonSocial: provider.razonSocial }) });
 
     return NextResponse.json(provider);
@@ -25,9 +29,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    await prisma.provider.delete({ where: { id } });
-
     const session = await auth();
+    const tenantId = session?.user?.role === "SUPER_ADMIN" ? undefined : session?.user?.tenantId;
+    const whereClause: any = { id };
+    if (tenantId) whereClause.tenantId = tenantId;
+
+    await prisma.provider.delete({ where: whereClause });
+
     await logAction({ userId: session?.user?.id || "", userEmail: session?.user?.email || "", userName: session?.user?.name || "", action: "DELETE", entity: "provider", entityId: id });
 
     return NextResponse.json({ message: "Proveedor eliminado" });

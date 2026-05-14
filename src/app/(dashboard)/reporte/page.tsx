@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import { ReportTable } from "@/components/reporte/report-table";
 import { REPORT_COLUMNS } from "@/types";
 import { FileSpreadsheet } from "lucide-react";
@@ -12,23 +13,25 @@ export default async function ReportePage({
 }) {
   const { month, clientId } = await searchParams;
 
-  const whereOrder: any = {};
-  const whereMaterial: any = {};
+  const baseWhereOrder: any = {};
 
   if (month) {
     const [year, m] = month.split("-");
     const startDate = new Date(parseInt(year), parseInt(m) - 1, 1);
     const endDate = new Date(parseInt(year), parseInt(m), 0, 23, 59, 59);
 
-    whereOrder.fecha = {
+    baseWhereOrder.fecha = {
       gte: startDate,
       lte: endDate,
     };
   }
 
   if (clientId) {
-    whereOrder.clientId = clientId;
+    baseWhereOrder.clientId = clientId;
   }
+
+  const whereOrder = await withTenant(baseWhereOrder);
+  const whereClient = await withTenant();
 
   const [orders, clients] = await Promise.all([
     prisma.order.findMany({
@@ -52,6 +55,7 @@ export default async function ReportePage({
       orderBy: { fecha: "asc" },
     }),
     prisma.client.findMany({
+      where: whereClient,
       orderBy: { nombre: "asc" },
     }),
   ]);

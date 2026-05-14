@@ -1,9 +1,13 @@
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import { StockList } from "@/components/bodega/stock-list";
 import { Warehouse } from "lucide-react";
 
 export default async function BodegaPage() {
+  const where = await withTenant();
+
   const products = await prisma.product.findMany({
+    where,
     include: {
       provider: true,
       masterProduct: {

@@ -4,13 +4,24 @@ import { prisma } from "@/lib/prisma";
 import { hash } from "bcryptjs";
 import { logAction } from "@/lib/audit";
 
-export async function GET() {
+export async function GET(request: Request) {
   const session = await auth();
   if (!session?.user || session.user.role !== "SUPER_ADMIN") {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
+  const { searchParams } = new URL(request.url);
+  const tenantIdFilter = searchParams.get("tenantId");
+
+  const where: any = {};
+  if (tenantIdFilter) {
+    where.tenantId = tenantIdFilter;
+  } else {
+    where.tenantId = { not: null };
+  }
+
   const users = await prisma.user.findMany({
+    where,
     select: {
       id: true, name: true, email: true,
       role: { select: { id: true, name: true } },

@@ -1,9 +1,13 @@
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import { OperatorList } from "@/components/operadores/operator-list";
 import { Building } from "lucide-react";
 
 export default async function OperadoresPage() {
+  const where = await withTenant();
+
   const operators = await prisma.operator.findMany({
+    where,
     orderBy: { nombreOperador: "asc" },
   });
 

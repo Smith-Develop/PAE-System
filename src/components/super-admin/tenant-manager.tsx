@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 
 interface Tenant {
   id: string; name: string; slug: string; plan: string; active: boolean;
+  maxUsers: number; aiScansLimit: number; aiScansUsed: number;
   _count: { users: number };
 }
 
@@ -26,6 +27,8 @@ export function TenantManager() {
   const [slug, setSlug] = useState("");
   const [plan, setPlan] = useState("free");
   const [active, setActive] = useState(true);
+  const [maxUsers, setMaxUsers] = useState(5);
+  const [aiScansLimit, setAiScansLimit] = useState(10);
   const [saving, setSaving] = useState(false);
 
   const fetchTenants = async () => {
@@ -40,11 +43,13 @@ export function TenantManager() {
 
   const openCreate = () => {
     setEditing(null); setName(""); setSlug(""); setPlan("free"); setActive(true);
+    setMaxUsers(5); setAiScansLimit(10);
     setModalOpen(true);
   };
 
   const openEdit = (t: Tenant) => {
     setEditing(t); setName(t.name); setSlug(t.slug); setPlan(t.plan); setActive(t.active);
+    setMaxUsers(t.maxUsers); setAiScansLimit(t.aiScansLimit);
     setModalOpen(true);
   };
 
@@ -54,7 +59,7 @@ export function TenantManager() {
     try {
       const url = editing ? `/api/super-admin/tenants/${editing.id}` : "/api/super-admin/tenants";
       const method = editing ? "PUT" : "POST";
-      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, slug, plan, active }) });
+      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, slug, plan, active, maxUsers, aiScansLimit }) });
       if (!res.ok) { const err = await res.json(); throw new Error(err.error); }
       toast.success(editing ? "Tenant actualizado" : "Tenant creado");
       setModalOpen(false); fetchTenants();
@@ -90,7 +95,7 @@ export function TenantManager() {
                   <th className="py-3 px-4 font-semibold">Nombre</th>
                   <th className="py-3 px-4 font-semibold">Slug</th>
                   <th className="py-3 px-4 font-semibold">Plan</th>
-                  <th className="py-3 px-4 font-semibold text-center">Usuarios</th>
+                   <th className="py-3 px-4 font-semibold text-center">Uso</th>
                   <th className="py-3 px-4 font-semibold text-center">Estado</th>
                   <th className="py-3 px-4 font-semibold text-right">Acciones</th>
                 </tr>
@@ -101,7 +106,7 @@ export function TenantManager() {
                     <td className="py-3 px-4 font-medium">{t.name}</td>
                     <td className="py-3 px-4 font-mono text-xs">{t.slug}</td>
                     <td className="py-3 px-4"><Badge variant="outline">{t.plan}</Badge></td>
-                    <td className="py-3 px-4 text-center">{t._count.users}</td>
+                    <td className="py-3 px-4 text-center text-xs">{t._count.users}/{t.maxUsers} users, {t.aiScansUsed}/{t.aiScansLimit} scans</td>
                     <td className="py-3 px-4 text-center">
                       <Badge variant={t.active ? "secondary" : "destructive"}>{t.active ? "Activo" : "Inactivo"}</Badge>
                     </td>
@@ -140,6 +145,14 @@ export function TenantManager() {
                 <option value="pro">Pro</option>
                 <option value="enterprise">Enterprise</option>
               </select>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground uppercase">Max Usuarios</p>
+              <Input type="number" min={1} value={maxUsers} onChange={(e) => setMaxUsers(Number(e.target.value))} />
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground uppercase">Scans IA / Mes</p>
+              <Input type="number" min={0} value={aiScansLimit} onChange={(e) => setAiScansLimit(Number(e.target.value))} />
             </div>
             <div className="flex items-center gap-2">
               <input type="checkbox" id="active" checked={active} onChange={(e) => setActive(e.target.checked)} />

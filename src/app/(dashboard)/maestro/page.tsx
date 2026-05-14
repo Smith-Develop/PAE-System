@@ -1,12 +1,16 @@
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import { ProductList } from "@/components/maestro/product-list";
 import { MasterProductList } from "@/components/maestro/master-product-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Package, BookOpen } from "lucide-react";
 
 export default async function MaestroPage() {
+  const where = await withTenant();
+
   const [products, masterProducts, providers, foodGroups] = await Promise.all([
     prisma.product.findMany({
+      where,
       include: {
         provider: true,
         masterProduct: {
@@ -18,11 +22,12 @@ export default async function MaestroPage() {
       },
     }),
     prisma.masterProduct.findMany({
+      where,
       include: { foodGroup: true },
       orderBy: { nombre: "asc" },
     }),
-    prisma.provider.findMany({ orderBy: { razonSocial: "asc" } }),
-    prisma.foodGroup.findMany({ orderBy: { id: "asc" } }),
+    prisma.provider.findMany({ where, orderBy: { razonSocial: "asc" } }),
+    prisma.foodGroup.findMany({ where, orderBy: { id: "asc" } }),
   ]);
 
   return (

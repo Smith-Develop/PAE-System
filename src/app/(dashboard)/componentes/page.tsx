@@ -1,9 +1,13 @@
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import { ComponentList } from "@/components/componentes/component-list";
 import { Puzzle } from "lucide-react";
 
 export default async function ComponentesPage() {
+  const where = await withTenant();
+
   const components = await prisma.component.findMany({
+    where,
     include: {
       _count: { select: { dishes: true } },
     },

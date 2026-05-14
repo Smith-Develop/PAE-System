@@ -93,6 +93,7 @@ export function OrderCalculator({
   >({});
   const [nota, setNota] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [primaryProviderId, setPrimaryProviderId] = useState<string>("");
 
   const [orders, setOrders] = useState<OrderRecord[]>([]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
@@ -160,6 +161,24 @@ export function OrderCalculator({
     return calculatePackingList(selectedMenus, menuData);
   }, [selectedMenus, menuData]);
 
+  const uniqueProviders = useMemo(() => {
+    const providersMap = new Map<
+      string,
+      { id: string; razonSocial: string }
+    >();
+    masterProducts.forEach((m) => {
+      (m.providerProducts || []).forEach((v) => {
+        if (!providersMap.has(v.providerId)) {
+          providersMap.set(v.providerId, {
+            id: v.providerId,
+            razonSocial: v.provider?.razonSocial || "Desconocido",
+          });
+        }
+      });
+    });
+    return Array.from(providersMap.values());
+  }, [masterProducts]);
+
   // Auto-select variants with single provider and stock > 0
   useEffect(() => {
     const newVariants = { ...selectedVariants };
@@ -186,6 +205,26 @@ export function OrderCalculator({
       setSelectedVariants(newVariants);
     }
   }, [packingList, masterProducts, selectedVariants]);
+
+  // Auto-assign variants when primary provider is selected
+  useEffect(() => {
+    if (!primaryProviderId) return;
+    const newVariants = { ...selectedVariants };
+    packingList.forEach((item) => {
+      const master = masterProducts.find(
+        (mp) => mp.id === item.masterProductId
+      );
+      const matchingVariant = (master?.providerProducts || []).find(
+        (v) =>
+          v.providerId === primaryProviderId && v.currentStock > 0
+      );
+      if (matchingVariant) {
+        newVariants[item.masterProductId] = matchingVariant.id;
+      }
+    });
+    setSelectedVariants(newVariants);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [primaryProviderId]);
 
   const addMenu = () => {
     setSelectedMenus([
@@ -279,6 +318,7 @@ export function OrderCalculator({
       setSelectedOperatorId("");
       setSelectedClientId("");
       setSelectedVariants({});
+      setPrimaryProviderId("");
       setNota("");
       fetchOrders();
     } catch (error: unknown) {
@@ -522,6 +562,24 @@ export function OrderCalculator({
                 </>
               )}
             </div>
+
+            {packingList.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-primary/10 print:hidden">
+                <label className="text-xs font-semibold text-primary mb-1 block">
+                  Asignar proveedor por defecto
+                </label>
+                <Combobox
+                  options={uniqueProviders.map((p) => ({
+                    label: p.razonSocial,
+                    value: p.id,
+                  }))}
+                  value={primaryProviderId}
+                  onValueChange={(val) => setPrimaryProviderId(val)}
+                  placeholder="Seleccionar proveedor principal..."
+                  className="h-9"
+                />
+              </div>
+            )}
           </CardHeader>
           <CardContent className="flex-1 overflow-y-auto p-0">
             {packingList.length === 0 ? (
@@ -535,137 +593,195 @@ export function OrderCalculator({
                 </p>
               </div>
             ) : (
-              <div className="w-full overflow-x-auto">
-              <Table>
-                <TableHeader className="bg-muted/30 sticky top-0 z-10 shadow-sm">
-                  <TableRow>
-                    <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
-                      Menú / Plato
-                    </TableHead>
-                    <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
-                      Producto
-                    </TableHead>
-                    <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
-                      Proveedor / Marca *
-                    </TableHead>
-                    <TableHead className="text-right font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
-                      Cantidad
-                    </TableHead>
-                    <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
-                      Unidad
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {packingList.map((item, index) => {
-                    const master = masterProducts.find(
-                      (mp) => mp.id === item.masterProductId
-                    );
-                    const variants = master?.providerProducts || [];
-                    const selectedVariant = variants.find(
-                      (v) => v.id === selectedVariants[item.masterProductId]
-                    );
-                    const selectedLabel = selectedVariant
-                      ? `${selectedVariant.provider?.razonSocial || "N/A"} - ${selectedVariant.descripcionMarca}`
-                      : "";
+              (() => {
+                const pending = packingList.filter(
+                  (item) => !selectedVariants[item.masterProductId]
+                );
+                const assigned = packingList.filter(
+                  (item) => !!selectedVariants[item.masterProductId]
+                );
 
-                    return (
-                      <TableRow key={index} className="hover:bg-accent/50">
-                        <TableCell className="text-xs text-muted-foreground max-w-[200px]">
-                          {/* Mostrar de qué platos viene este producto */}
-                          {(() => {
-                            const sources: string[] = [];
-                            for (const sm of selectedMenus) {
-                              const menu = menus.find(
-                                (m) => m.id === sm.menuId
-                              );
-                              if (!menu) continue;
-                              for (const md of menu.dishes || []) {
-                                const dish = md.dish;
-                                if (!dish) continue;
-                                const found = dish.ingredients?.find(
-                                  (ing) =>
-                                    ing.masterProductId ===
-                                    item.masterProductId
-                                );
-                                if (found) {
-                                  sources.push(
-                                  `${dish.componente?.name || "?"}: ${dish.nombre}`
-                                );
-                                }
-                              }
-                            }
-                            return (
-                              <div className="space-y-0.5">
-                                {sources.length > 0 ? (
-                                  sources.map((s, i) => (
-                                      <div
-                                       key={i}
-                                       className="text-[10px] leading-tight break-all whitespace-normal overflow-hidden max-w-[250px]"
-                                     >
-                                      {s}
-                                    </div>
-                                  ))
-                                ) : (
-                                  <span>—</span>
-                                )}
-                              </div>
-                            );
-                          })()}
-                        </TableCell>
-                        <TableCell className="font-medium break-all whitespace-normal overflow-hidden max-w-[250px]">
-                          {item.productName}
-                        </TableCell>
-                        <TableCell className="min-w-[160px] break-all whitespace-normal overflow-hidden max-w-[250px]">
-                          <Select
-                            value={
-                              selectedVariants[item.masterProductId] || ""
-                            }
-                            onValueChange={(val) =>
-                              setSelectedVariants((prev) => ({
-                                ...prev,
-                                [item.masterProductId]: val || "",
-                              }))
-                            }
+                const renderSources = (item: PackingItem) => {
+                  const sources: string[] = [];
+                  for (const sm of selectedMenus) {
+                    const menu = menus.find((m) => m.id === sm.menuId);
+                    if (!menu) continue;
+                    for (const md of menu.dishes || []) {
+                      const dish = md.dish;
+                      if (!dish) continue;
+                      const found = dish.ingredients?.find(
+                        (ing) =>
+                          ing.masterProductId === item.masterProductId
+                      );
+                      if (found) {
+                        sources.push(
+                          `${dish.componente?.name || "?"}: ${dish.nombre}`
+                        );
+                      }
+                    }
+                  }
+                  return (
+                    <div className="space-y-0.5">
+                      {sources.length > 0 ? (
+                        sources.map((s, i) => (
+                          <div
+                            key={i}
+                            className="text-[10px] leading-tight break-all whitespace-normal overflow-hidden max-w-[250px]"
                           >
-                            <SelectTrigger className="h-9 bg-white border-primary/10">
-                              <SelectValue>
-                                {selectedLabel || "Seleccione proveedor..."}
-                              </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                              {variants
-                                .filter((v) => v.currentStock > 0)
-                                .map((v) => (
-                                  <SelectItem key={v.id} value={v.id}>
-                                    {v.provider?.razonSocial || "N/A"} -{" "}
-                                    {v.descripcionMarca} ({v.currentStock})
-                                  </SelectItem>
-                                ))}
-                              {variants.filter((v) => v.currentStock > 0)
-                                .length === 0 && (
-                                <SelectItem value="none" disabled>
-                                  Sin stock disponible
+                            {s}
+                          </div>
+                        ))
+                      ) : (
+                        <span>—</span>
+                      )}
+                    </div>
+                  );
+                };
+
+                const renderRow = (item: PackingItem, idx: number) => {
+                  const master = masterProducts.find(
+                    (mp) => mp.id === item.masterProductId
+                  );
+                  const variants = master?.providerProducts || [];
+                  const selectedVariant = variants.find(
+                    (v) =>
+                      v.id === selectedVariants[item.masterProductId]
+                  );
+                  const selectedLabel = selectedVariant
+                    ? `${selectedVariant.provider?.razonSocial || "N/A"} - ${selectedVariant.descripcionMarca}`
+                    : "";
+                  const isPending = !selectedVariant;
+
+                  return (
+                    <TableRow
+                      key={idx}
+                      className={
+                        isPending
+                          ? "bg-amber-50/80 hover:bg-amber-100/80"
+                          : "hover:bg-accent/50"
+                      }
+                    >
+                      <TableCell className="text-xs text-muted-foreground max-w-[200px]">
+                        {renderSources(item)}
+                      </TableCell>
+                      <TableCell className="font-medium break-all whitespace-normal overflow-hidden max-w-[250px]">
+                        {item.productName}
+                      </TableCell>
+                      <TableCell className="min-w-[160px] break-all whitespace-normal overflow-hidden max-w-[250px]">
+                        <Select
+                          value={
+                            selectedVariants[item.masterProductId] || ""
+                          }
+                          onValueChange={(val) =>
+                            setSelectedVariants((prev) => ({
+                              ...prev,
+                              [item.masterProductId]: val || "",
+                            }))
+                          }
+                        >
+                          <SelectTrigger
+                            className={`h-9 bg-white ${isPending ? "border-amber-400" : "border-primary/10"}`}
+                          >
+                            <SelectValue>
+                              {selectedLabel ||
+                                "Seleccione proveedor..."}
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {variants
+                              .filter((v) => v.currentStock > 0)
+                              .map((v) => (
+                                <SelectItem key={v.id} value={v.id}>
+                                  {v.provider?.razonSocial || "N/A"} -{" "}
+                                  {v.descripcionMarca} ({v.currentStock})
                                 </SelectItem>
-                              )}
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell className="text-right font-mono font-bold text-lg text-secondary">
-                          {item.totalQuantity.toLocaleString("es-CO", {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {item.unit}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-              </div>
+                              ))}
+                            {variants.filter((v) => v.currentStock > 0)
+                              .length === 0 && (
+                              <SelectItem value="none" disabled>
+                                Sin stock disponible
+                              </SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell className="text-right font-mono font-bold text-lg text-secondary">
+                        {item.totalQuantity.toLocaleString("es-CO", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {item.unit}
+                      </TableCell>
+                    </TableRow>
+                  );
+                };
+
+                return (
+                  <div className="w-full overflow-x-auto">
+                    <Table>
+                      <TableHeader className="bg-muted/30 sticky top-0 z-10 shadow-sm">
+                        <TableRow>
+                          <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
+                            Menú / Plato
+                          </TableHead>
+                          <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
+                            Producto
+                          </TableHead>
+                          <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
+                            Proveedor / Marca *
+                          </TableHead>
+                          <TableHead className="text-right font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
+                            Cantidad
+                          </TableHead>
+                          <TableHead className="font-bold text-primary py-2 px-2 text-[11px] sm:text-xs break-all whitespace-normal leading-tight">
+                            Unidad
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {pending.length > 0 && (
+                          <>
+                            <TableRow className="bg-amber-100 hover:bg-amber-100">
+                              <TableCell
+                                colSpan={5}
+                                className="py-1 px-2"
+                              >
+                                <span className="text-xs font-bold text-amber-800">
+                                  ⚠️ Pendientes de selección (
+                                  {pending.length})
+                                </span>
+                              </TableCell>
+                            </TableRow>
+                            {pending.map((item, i) =>
+                              renderRow(item, i)
+                            )}
+                          </>
+                        )}
+
+                        {assigned.length > 0 && (
+                          <>
+                            <TableRow className="bg-emerald-100 hover:bg-emerald-100">
+                              <TableCell
+                                colSpan={5}
+                                className="py-1 px-2"
+                              >
+                                <span className="text-xs font-bold text-emerald-800">
+                                  ✅ Asignados ({assigned.length})
+                                </span>
+                              </TableCell>
+                            </TableRow>
+                            {assigned.map((item, i) =>
+                              renderRow(item, pending.length + i)
+                            )}
+                          </>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                );
+              })()
             )}
           </CardContent>
           {packingList.length > 0 && (

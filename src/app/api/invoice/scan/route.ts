@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { AI_ENABLED } from "@/lib/ai-config";
 
 export async function POST(request: Request) {
@@ -8,6 +9,22 @@ export async function POST(request: Request) {
 
   if (!AI_ENABLED) {
     return NextResponse.json({ error: "IA no configurada. Agrega GEMINI_API_KEY al .env" }, { status: 501 });
+  }
+
+  if (session.user.role !== "SUPER_ADMIN") {
+    const tenant = await prisma.tenant.findUnique({ where: { id: session.user.tenantId! } });
+    if (!tenant) return NextResponse.json({ error: "Tenant no encontrado" }, { status: 404 });
+
+    const now = new Date();
+    const resetDate = new Date(tenant.aiScansReset);
+    if (resetDate.getMonth() !== now.getMonth() || resetDate.getFullYear() !== now.getFullYear()) {
+      await prisma.tenant.update({ where: { id: tenant.id }, data: { aiScansUsed: 0, aiScansReset: now } });
+      tenant.aiScansUsed = 0;
+    }
+
+    if (tenant.aiScansUsed >= tenant.aiScansLimit) {
+      return NextResponse.json({ error: "Límite de escaneos IA alcanzado este mes" }, { status: 403 });
+    }
   }
 
   try {
@@ -39,6 +56,10 @@ Devuelve SOLO el JSON, sin explicaciones ni markdown.`;
     // Parsear JSON de la respuesta (limpiar posibles backticks de markdown)
     const cleanText = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
     const parsed = JSON.parse(cleanText);
+
+    if (session.user.role !== "SUPER_ADMIN") {
+      await prisma.tenant.update({ where: { id: session.user.tenantId! }, data: { aiScansUsed: { increment: 1 } } });
+    }
 
     return NextResponse.json({ items: parsed.items || [] });
   } catch (e: any) {

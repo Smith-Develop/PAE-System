@@ -1,10 +1,14 @@
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import { PurchaseList } from "@/components/compras/purchase-list";
 import { Receipt } from "lucide-react";
 
 export default async function ComprasPage() {
+  const where = await withTenant();
+
   const [purchases, products, operators, clients] = await Promise.all([
     prisma.purchase.findMany({
+      where,
       include: {
         product: {
           include: {
@@ -18,6 +22,7 @@ export default async function ComprasPage() {
       orderBy: { fechaCompra: "desc" },
     }),
     prisma.product.findMany({
+      where,
       include: {
         provider: true,
         masterProduct: true,
@@ -27,9 +32,11 @@ export default async function ComprasPage() {
       },
     }),
     prisma.operator.findMany({
+      where,
       orderBy: { nombreOperador: "asc" },
     }),
     prisma.client.findMany({
+      where,
       orderBy: { nombre: "asc" },
     }),
   ]);

@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hash } from "bcryptjs";
 import { logAction } from "@/lib/audit";
+import { withTenant } from "@/lib/tenant";
 
 export async function GET() {
   const session = await auth();
@@ -10,7 +11,18 @@ export async function GET() {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
+  const where = await withTenant();
+  if (session.user.role !== "SUPER_ADMIN") {
+    if (Object.keys(where).length > 0) {
+      where.AND = [{ ...where, tenantId: where.tenantId }, { tenantId: { not: null } }];
+      delete where.tenantId;
+    } else {
+      where.tenantId = { not: null };
+    }
+  }
+
   const users = await prisma.user.findMany({
+    where,
     select: { id: true, name: true, email: true, role: { select: { id: true, name: true } }, active: true, createdAt: true },
     orderBy: { createdAt: "desc" },
   });
@@ -32,6 +44,11 @@ export async function POST(request: Request) {
 
   if (password.length < 6) {
     return NextResponse.json({ error: "La contraseña debe tener al menos 6 caracteres" }, { status: 400 });
+  }
+
+  const role = await prisma.role.findUnique({ where: { id: roleId } });
+  if (role?.name === "SUPER_ADMIN" && session.user.role !== "SUPER_ADMIN") {
+    return NextResponse.json({ error: "Solo Super Admin puede crear Super Admins" }, { status: 403 });
   }
 
   const exists = await prisma.user.findUnique({ where: { email } });

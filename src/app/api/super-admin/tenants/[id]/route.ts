@@ -7,11 +7,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   if (!session?.user || session.user.role !== "SUPER_ADMIN") return NextResponse.json({ error: "Solo Super Admin" }, { status: 403 });
   const { id } = await params;
   const body = await request.json();
-  const { name, slug, plan, active } = body;
+  const { name, slug, plan, active, maxUsers, aiScansLimit } = body;
   try {
     const tenant = await prisma.tenant.update({
       where: { id },
-      data: { name, slug: slug?.toLowerCase().replace(/\s+/g, "-"), plan, active },
+      data: { name, slug: slug?.toLowerCase().replace(/\s+/g, "-"), plan, active, ...(maxUsers !== undefined && { maxUsers }), ...(aiScansLimit !== undefined && { aiScansLimit }) },
     });
     return NextResponse.json(tenant);
   } catch { return NextResponse.json({ error: "Error al actualizar" }, { status: 500 }); }

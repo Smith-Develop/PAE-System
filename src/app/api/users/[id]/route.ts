@@ -16,7 +16,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   const data: any = {};
   if (name) data.name = name;
   if (email) data.email = email;
-  if (roleId) data.roleId = roleId;
+  if (roleId) {
+    const targetRole = await prisma.role.findUnique({ where: { id: roleId } });
+    if (targetRole?.name === "SUPER_ADMIN" && session.user.role !== "SUPER_ADMIN") {
+      return NextResponse.json({ error: "Solo Super Admin puede asignar rol Super Admin" }, { status: 403 });
+    }
+    data.roleId = roleId;
+  }
   if (active !== undefined) data.active = active;
   if (password && password.length >= 6) {
     data.password = await hash(password, 12);

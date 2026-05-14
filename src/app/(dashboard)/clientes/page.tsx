@@ -1,9 +1,13 @@
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import { ClientList } from "@/components/clientes/client-list";
 import { Users } from "lucide-react";
 
 export default async function ClientesPage() {
+  const where = await withTenant();
+
   const clients = await prisma.client.findMany({
+    where,
     orderBy: { nombre: "asc" },
   });
 

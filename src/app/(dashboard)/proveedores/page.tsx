@@ -1,9 +1,13 @@
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import { ProviderList } from "@/components/proveedores/provider-list";
 import { Truck } from "lucide-react";
 
 export default async function ProveedoresPage() {
+  const where = await withTenant();
+
   const providers = await prisma.provider.findMany({
+    where,
     orderBy: { razonSocial: "asc" },
   });
 

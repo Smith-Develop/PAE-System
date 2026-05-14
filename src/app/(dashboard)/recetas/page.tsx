@@ -1,12 +1,16 @@
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import { MenuList } from "@/components/recetas/menu-list";
 import { DishList } from "@/components/recetas/dish-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChefHat, UtensilsCrossed } from "lucide-react";
 
 export default async function RecetasPage() {
+  const where = await withTenant();
+
   const [dishes, menus, masterProducts, components] = await Promise.all([
     prisma.dish.findMany({
+      where,
       include: {
         componente: true,
         ingredients: {
@@ -16,6 +20,7 @@ export default async function RecetasPage() {
       orderBy: { componente: { name: "asc" } },
     }),
     prisma.menu.findMany({
+      where,
       include: {
         dishes: {
           include: {
@@ -34,9 +39,11 @@ export default async function RecetasPage() {
       orderBy: { nombre: "asc" },
     }),
     prisma.masterProduct.findMany({
+      where,
       orderBy: { nombre: "asc" },
     }),
     prisma.component.findMany({
+      where,
       orderBy: { name: "asc" },
     }),
   ]);

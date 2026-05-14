@@ -1,18 +1,23 @@
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import { GroupList } from "@/components/grupos/group-list";
 import { ProductsByGroup } from "@/components/grupos/products-by-group";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Layers, Box } from "lucide-react";
 
 export default async function GruposPage() {
+  const where = await withTenant();
+
   const [groups, masterProducts] = await Promise.all([
     prisma.foodGroup.findMany({
+      where,
       orderBy: { name: "asc" },
       include: {
         _count: { select: { masterProducts: true } },
       },
     }),
     prisma.masterProduct.findMany({
+      where,
       include: { foodGroup: true },
       orderBy: { nombre: "asc" },
     }),

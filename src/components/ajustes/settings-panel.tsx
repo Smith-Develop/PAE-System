@@ -236,7 +236,7 @@ export function SettingsPanel({ user }: SettingsPanelProps) {
               <div>
                 <p className="text-sm font-bold">IA — Gemini Vision</p>
                 <p className="text-xs text-muted-foreground">
-                  {aiStatus.checking ? "Verificando..." : aiStatus.enabled ? "Conectada y funcionando" : "No configurada — agrega GEMINI_API_KEY en Vercel"}
+                  {aiStatus.checking ? "Verificando..." : aiStatus.enabled ? "Conectada y funcionando" : "No configurada — agrega un modelo IA en Panel Super Admin → Modelos IA"}
                 </p>
               </div>
             </div>

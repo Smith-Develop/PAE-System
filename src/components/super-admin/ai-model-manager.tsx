@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Edit, Trash2, Zap, Star } from "lucide-react";
+import { Plus, Edit, Trash2, Zap, Star, Play, Loader2, CheckCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -36,6 +36,8 @@ export function AiModelManager() {
   const [isDefault, setIsDefault] = useState(false);
   const [active, setActive] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState<string | null>(null);
+  const [testResult, setTestResult] = useState<Record<string, { ok: boolean; msg: string }>>({});
 
   const fetchModels = async () => {
     try {
@@ -81,6 +83,24 @@ export function AiModelManager() {
     } catch (e: any) { toast.error(e.message); }
   };
 
+  const handleTest = async (m: AIModel) => {
+    setTesting(m.id); setTestResult((prev) => { const n = { ...prev }; delete n[m.id]; return n; });
+    try {
+      const res = await fetch("/api/super-admin/ai-models/test", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ modelId: m.id }) });
+      const data = await res.json();
+      if (data.success) {
+        setTestResult((prev) => ({ ...prev, [m.id]: { ok: true, msg: `${data.latency}` } }));
+        toast.success(`${m.name}: Conectado (${data.latency})`);
+      } else {
+        setTestResult((prev) => ({ ...prev, [m.id]: { ok: false, msg: data.error?.slice(0, 40) || "Error" } }));
+        toast.error(`${m.name}: ${data.error?.slice(0, 60)}`);
+      }
+    } catch (e: any) {
+      setTestResult((prev) => ({ ...prev, [m.id]: { ok: false, msg: "Timeout" } }));
+      toast.error(`Error al probar ${m.name}`);
+    } finally { setTesting(null); }
+  };
+
   const maskKey = (key: string) => key ? `${key.slice(0, 6)}...${key.slice(-4)}` : "—";
 
   return (
@@ -118,6 +138,15 @@ export function AiModelManager() {
                   <td className="py-2 px-3 text-center">{m.isDefault && <Star className="h-3.5 w-3.5 text-amber-500 mx-auto" />}</td>
                   <td className="py-2 px-3 text-center"><Badge variant={m.active ? "secondary" : "destructive"} className="text-[10px]">{m.active ? "Activo" : "Inactivo"}</Badge></td>
                   <td className="py-2 px-3 text-right">
+                    {testResult[m.id] ? (
+                      <span className={`inline-flex items-center gap-0.5 text-[10px] mr-1 ${testResult[m.id].ok ? "text-green-600" : "text-red-600"}`}>
+                        {testResult[m.id].ok ? <CheckCircle className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
+                        {testResult[m.id].msg}
+                      </span>
+                    ) : null}
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleTest(m)} disabled={testing === m.id} title="Probar conexión">
+                      {testing === m.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Play className="h-3.5 w-3.5" />}
+                    </Button>
                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(m)}><Edit className="h-3.5 w-3.5" /></Button>
                     <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete(m)}><Trash2 className="h-3.5 w-3.5" /></Button>
                   </td>

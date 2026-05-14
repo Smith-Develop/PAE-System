@@ -2,9 +2,12 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { logAction } from "@/lib/audit";
+import { withTenant } from "@/lib/tenant";
 
 export async function GET() {
+  const where = await withTenant();
   const orders = await prisma.order.findMany({
+    where,
     include: { client: true, operator: true, items: { select: { menuId: true, raciones: true } }, materials: { include: { masterProduct: true, product: { include: { provider: true } } } } },
     orderBy: { fecha: "desc" }, take: 50,
   });
@@ -19,10 +22,11 @@ export async function POST(request: Request) {
     if (!operatorId) return NextResponse.json({ error: "Operador requerido" }, { status: 400 });
     if (!clientId) return NextResponse.json({ error: "Cliente requerido" }, { status: 400 });
 
+    const tenantId = (await auth())?.user?.tenantId;
     const order = await prisma.$transaction(async (tx) => {
       const newOrder = await tx.order.create({
         data: {
-          operatorId, clientId, nota,
+          operatorId, clientId, nota, tenantId: tenantId || undefined,
           items: { create: items.map((i: any) => ({ menuId: i.menuId, raciones: i.raciones })) },
           materials: { create: (materials || []).map((m: any) => ({ masterProductId: m.masterProductId, productId: m.productId, cantidadTotal: m.cantidadTotal })) },
         },

@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 
 export async function GET() {
   try {
+    const where = await withTenant();
     const products = await prisma.product.findMany({
+      where,
       include: {
         provider: true,
         masterProduct: {

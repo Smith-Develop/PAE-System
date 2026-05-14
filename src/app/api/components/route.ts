@@ -2,14 +2,16 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { logAction } from "@/lib/audit";
+import { withTenant } from "@/lib/tenant";
 
-export async function GET() { return NextResponse.json(await prisma.component.findMany({ orderBy: { name: "asc" } })); }
+export async function GET() { const where = await withTenant(); return NextResponse.json(await prisma.component.findMany({ where, orderBy: { name: "asc" } })); }
 
 export async function POST(request: Request) {
   try {
     const { name } = await request.json();
     if (!name?.trim()) return NextResponse.json({ error: "Nombre requerido" }, { status: 400 });
-    const component = await prisma.component.create({ data: { name: name.trim() } });
+    const tenantId = (await auth())?.user?.tenantId;
+    const component = await prisma.component.create({ data: { name: name.trim(), tenantId: tenantId || undefined } });
 
     const session = await auth();
     await logAction({ userId: session?.user?.id || "", userEmail: session?.user?.email || "", userName: session?.user?.name || "", action: "CREATE", entity: "component", entityId: component.id, details: JSON.stringify({ name }) });

@@ -3,10 +3,13 @@ import { prisma } from "@/lib/prisma";
 import { operatorSchema } from "@/lib/validations";
 import { auth } from "@/lib/auth";
 import { logAction } from "@/lib/audit";
+import { withTenant } from "@/lib/tenant";
 
 export async function GET() {
   try {
+    const where = await withTenant();
     const operators = await prisma.operator.findMany({
+      where,
       orderBy: { nombreOperador: "asc" },
     });
     return NextResponse.json(operators);
@@ -30,8 +33,9 @@ export async function POST(request: Request) {
       );
     }
 
+    const tenantId = (await auth())?.user?.tenantId;
     const operator = await prisma.operator.create({
-      data: result.data,
+      data: { ...result.data, tenantId: tenantId || undefined },
     });
 
     const session = await auth();

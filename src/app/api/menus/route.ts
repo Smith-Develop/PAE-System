@@ -3,9 +3,11 @@ import { prisma } from "@/lib/prisma";
 import { menuSchema } from "@/lib/validations";
 import { auth } from "@/lib/auth";
 import { logAction } from "@/lib/audit";
+import { withTenant } from "@/lib/tenant";
 
 export async function GET() {
-  return NextResponse.json(await prisma.menu.findMany({ include: { dishes: { include: { dish: { include: { componente: true, ingredients: { include: { masterProduct: true } } } } }, orderBy: { orden: "asc" } } }, orderBy: { nombre: "asc" } }));
+  const where = await withTenant();
+  return NextResponse.json(await prisma.menu.findMany({ where, include: { dishes: { include: { dish: { include: { componente: true, ingredients: { include: { masterProduct: true } } } } }, orderBy: { orden: "asc" } } }, orderBy: { nombre: "asc" } }));
 }
 
 export async function POST(request: Request) {
@@ -14,8 +16,9 @@ export async function POST(request: Request) {
     const result = menuSchema.safeParse(body);
     if (!result.success) return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
 
+    const tenantId = (await auth())?.user?.tenantId;
     const menu = await prisma.menu.create({
-      data: { nombre: result.data.nombre, descripcion: result.data.descripcion, dishes: { create: result.data.dishes.map((d: any) => ({ dishId: d.dishId, orden: d.orden })) } },
+      data: { nombre: result.data.nombre, descripcion: result.data.descripcion, tenantId: tenantId || undefined, dishes: { create: result.data.dishes.map((d: any) => ({ dishId: d.dishId, orden: d.orden })) } },
       include: { dishes: { include: { dish: { include: { componente: true, ingredients: { include: { masterProduct: true } } } } }, orderBy: { orden: "asc" } } },
     });
 

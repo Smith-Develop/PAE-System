@@ -69,6 +69,23 @@ async function main() {
     prisma.role.upsert({ where: { name: "EMPLEADO" }, update: { permissions: EMPLOYEE_PERMISSIONS }, create: { name: "EMPLEADO", description: "Empleado", permissions: EMPLOYEE_PERMISSIONS } }),
   ]);
 
+  // Modelos IA por defecto
+  console.log("\nCreando modelos IA...");
+  const aiModels = [
+    { name: "Gemini 2.5 Flash", provider: "google", modelId: "gemini-2.5-flash", isDefault: true },
+    { name: "Gemini 2.0 Flash", provider: "google", modelId: "gemini-2.0-flash" },
+    { name: "DeepSeek V3", provider: "deepseek", modelId: "deepseek-chat", baseUrl: "https://api.deepseek.com/v1" },
+    { name: "GPT-4o", provider: "openai", modelId: "gpt-4o" },
+    { name: "GPT-4o Mini", provider: "openai", modelId: "gpt-4o-mini" },
+  ];
+  for (const m of aiModels) {
+    const exists = await prisma.aIModel.findUnique({ where: { name: m.name } });
+    if (!exists) {
+      await prisma.aIModel.create({ data: { name: m.name, provider: m.provider, modelId: m.modelId, apiKey: process.env.GEMINI_API_KEY || "", baseUrl: m.baseUrl || null, isDefault: m.isDefault || false, active: true } });
+    }
+  }
+  console.log(`  ${aiModels.length} modelos`);
+
   // Usuarios
   console.log("\nCreando usuarios...");
   const users = [

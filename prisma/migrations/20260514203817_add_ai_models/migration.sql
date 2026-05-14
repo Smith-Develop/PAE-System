@@ -76,6 +76,22 @@ CREATE TABLE "Role" (
 );
 
 -- CreateTable
+CREATE TABLE "AIModel" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "provider" TEXT NOT NULL,
+    "modelId" TEXT NOT NULL,
+    "apiKey" TEXT NOT NULL,
+    "baseUrl" TEXT,
+    "isDefault" BOOLEAN NOT NULL DEFAULT false,
+    "active" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "AIModel_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Log" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -337,6 +353,9 @@ CREATE INDEX "User_tenantId_idx" ON "User"("tenantId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Role_name_key" ON "Role"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "AIModel_name_key" ON "AIModel"("name");
 
 -- CreateIndex
 CREATE INDEX "Log_userId_idx" ON "Log"("userId");

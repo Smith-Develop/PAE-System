@@ -116,6 +116,23 @@ model Role {
 }
 
 // ============================================
+// MODELOS DE IA
+// ============================================
+model AIModel {
+  id        String   @id @default(cuid())
+  name      String   @unique   // "Gemini 2.5 Flash", "DeepSeek V3", "GPT-4o"
+  provider  String              // "google", "openai", "deepseek", "anthropic"
+  modelId   String              // "gemini-2.5-flash", "deepseek-chat", "gpt-4o"
+  apiKey    String              // API key encriptada o en texto plano
+  baseUrl   String?             // URL base alternativa (para proxies o self-hosted)
+  isDefault Boolean  @default(false)
+  active    Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================
 // LOGS DE AUDITORÍA
 // ============================================
 model Log {

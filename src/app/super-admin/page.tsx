@@ -4,6 +4,7 @@ import { Shield } from "lucide-react";
 import { DashboardStats } from "@/components/super-admin/dashboard-stats";
 import { TenantManager } from "@/components/super-admin/tenant-manager";
 import { PlanManager } from "@/components/super-admin/plan-manager";
+import { AiModelManager } from "@/components/super-admin/ai-model-manager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const dynamic = "force-dynamic";
@@ -26,11 +27,13 @@ export default async function SuperAdminPage() {
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           <TabsTrigger value="tenants">Tenants</TabsTrigger>
           <TabsTrigger value="plans">Planes</TabsTrigger>
+          <TabsTrigger value="ai">Modelos IA</TabsTrigger>
         </TabsList>
 
         <TabsContent value="dashboard"><DashboardStats /></TabsContent>
         <TabsContent value="tenants"><TenantManager /></TabsContent>
         <TabsContent value="plans"><PlanManager /></TabsContent>
+        <TabsContent value="ai"><AiModelManager /></TabsContent>
       </Tabs>
     </div>
   );

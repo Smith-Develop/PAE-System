@@ -20,6 +20,18 @@ export async function ensureDb() {
       }
     } catch {}
 
+    // Modelos IA default
+    try {
+      const aiModels = [
+        { name: "Gemini 2.5 Flash", provider: "google", modelId: "gemini-2.5-flash", isDefault: true },
+        { name: "DeepSeek V3", provider: "deepseek", modelId: "deepseek-chat", baseUrl: "https://api.deepseek.com/v1" },
+        { name: "GPT-4o", provider: "openai", modelId: "gpt-4o" },
+      ];
+      for (const m of aiModels) {
+        await prisma.aIModel.upsert({ where: { name: m.name }, update: {}, create: { name: m.name, provider: m.provider, modelId: m.modelId, apiKey: "", baseUrl: m.baseUrl || null, isDefault: m.isDefault || false, active: true } });
+      }
+    } catch {}
+
     // Obtener plan gratuito para el tenant
     let freePlanId: string | null = null;
     try {

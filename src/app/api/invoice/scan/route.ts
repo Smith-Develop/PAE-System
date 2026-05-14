@@ -1,41 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { AI_ENABLED } from "@/lib/ai-config";
 
-export async function POST(request: Request) {
-  const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-
-  if (!AI_ENABLED) {
-    return NextResponse.json({ error: "IA no configurada. Agrega GEMINI_API_KEY al .env" }, { status: 501 });
-  }
-
-  if (session.user.role !== "SUPER_ADMIN") {
-    const tenant = await prisma.tenant.findUnique({ where: { id: session.user.tenantId! } });
-    if (!tenant) return NextResponse.json({ error: "Tenant no encontrado" }, { status: 404 });
-
-    const now = new Date();
-    const resetDate = new Date(tenant.aiScansReset);
-    if (resetDate.getMonth() !== now.getMonth() || resetDate.getFullYear() !== now.getFullYear()) {
-      await prisma.tenant.update({ where: { id: tenant.id }, data: { aiScansUsed: 0, aiScansReset: now } });
-      tenant.aiScansUsed = 0;
-    }
-
-    if (tenant.aiScansUsed >= tenant.aiScansLimit) {
-      return NextResponse.json({ error: "Límite de escaneos IA alcanzado este mes" }, { status: 403 });
-    }
-  }
-
-  try {
-    const { image } = await request.json();
-    if (!image) return NextResponse.json({ error: "Imagen requerida" }, { status: 400 });
-
-    const { GoogleGenerativeAI } = await import("@google/generative-ai");
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
-    const prompt = `Extrae todos los productos de esta factura colombiana.
+const SCAN_PROMPT = `Extrae todos los productos de esta factura colombiana.
 Para cada producto, devuelve EXACTAMENTE un array JSON con este formato:
 {
   "items": [
@@ -45,25 +12,114 @@ Para cada producto, devuelve EXACTAMENTE un array JSON con este formato:
 Solo productos con cantidades mayores a 0. Ignora totales, impuestos y encabezados.
 Devuelve SOLO el JSON, sin explicaciones ni markdown.`;
 
-    const base64Data = image.replace(/^data:image\/\w+;base64,/, "").replace(/^data:application\/pdf;base64,/, "");
-    
-    const result = await model.generateContent([
-      prompt,
-      { inlineData: { mimeType: image.startsWith("data:application/pdf") ? "application/pdf" : "image/jpeg", data: base64Data } },
-    ]);
+async function scanWithGoogle(apiKey: string, modelId: string, imageBase64: string, mimeType: string) {
+  const { GoogleGenerativeAI } = await import("@google/generative-ai");
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({ model: modelId });
+  const result = await model.generateContent([
+    SCAN_PROMPT,
+    { inlineData: { mimeType, data: imageBase64 } },
+  ]);
+  return result.response.text();
+}
 
-    const text = result.response.text();
-    // Parsear JSON de la respuesta (limpiar posibles backticks de markdown)
+async function scanWithOpenAI(apiKey: string, modelId: string, baseUrl: string | null, imageBase64: string, mimeType: string) {
+  const url = `${baseUrl || "https://api.openai.com/v1"}/chat/completions`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      model: modelId,
+      messages: [{
+        role: "user",
+        content: [
+          { type: "text", text: SCAN_PROMPT },
+          { type: "image_url", image_url: { url: `data:${mimeType};base64,${imageBase64}` } },
+        ],
+      }],
+      max_tokens: 2000,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`API error: ${res.status} - ${err.slice(0, 100)}`);
+  }
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content || "";
+}
+
+export async function POST(request: Request) {
+  const session = await auth();
+  if (!session?.user?.id) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+
+  // Buscar modelo IA configurado
+  const aiModel = await prisma.aIModel.findFirst({ where: { isDefault: true, active: true } });
+
+  // Si no hay modelo configurado, usar fallback del .env
+  if (!aiModel) {
+    const envKey = process.env.GEMINI_API_KEY;
+    if (!envKey) return NextResponse.json({ error: "No hay modelo IA configurado. Agrega uno en Panel Super Admin → Modelos IA." }, { status: 501 });
+
+    // Fallback: usar Gemini desde .env
+    try {
+      const body = await request.json();
+      const { image } = body;
+      if (!image) return NextResponse.json({ error: "Imagen requerida" }, { status: 400 });
+
+      const base64Data = image.replace(/^data:image\/\w+;base64,/, "").replace(/^data:application\/pdf;base64,/, "");
+      const mimeType = image.startsWith("data:application/pdf") ? "application/pdf" : "image/jpeg";
+      const text = await scanWithGoogle(envKey, "gemini-2.5-flash", base64Data, mimeType);
+      const cleanText = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+      const parsed = JSON.parse(cleanText);
+      return NextResponse.json({ items: parsed.items || [] });
+    } catch (e: any) {
+      return NextResponse.json({ error: "Error al escanear: " + (e.message || "desconocido") }, { status: 500 });
+    }
+  }
+
+  // Verificar límites de tenant
+  if (session.user.role !== "SUPER_ADMIN" && session.user.tenantId) {
+    const tenant = await prisma.tenant.findUnique({ where: { id: session.user.tenantId } });
+    if (tenant) {
+      const now = new Date();
+      const resetDate = new Date(tenant.aiScansReset);
+      if (resetDate.getMonth() !== now.getMonth() || resetDate.getFullYear() !== now.getFullYear()) {
+        await prisma.tenant.update({ where: { id: tenant.id }, data: { aiScansUsed: 0, aiScansReset: now } });
+        tenant.aiScansUsed = 0;
+      }
+      if (tenant.aiScansUsed >= tenant.aiScansLimit) {
+        return NextResponse.json({ error: "Límite de escaneos IA alcanzado este mes" }, { status: 403 });
+      }
+    }
+  }
+
+  try {
+    const body = await request.json();
+    const { image } = body;
+    if (!image) return NextResponse.json({ error: "Imagen requerida" }, { status: 400 });
+
+    const base64Data = image.replace(/^data:image\/\w+;base64,/, "").replace(/^data:application\/pdf;base64,/, "");
+    const mimeType = image.startsWith("data:application/pdf") ? "application/pdf" : "image/jpeg";
+
+    let text: string;
+    if (aiModel.provider === "google") {
+      text = await scanWithGoogle(aiModel.apiKey, aiModel.modelId, base64Data, mimeType);
+    } else {
+      // openai, deepseek, anthropic, custom → OpenAI-compatible API
+      text = await scanWithOpenAI(aiModel.apiKey, aiModel.modelId, aiModel.baseUrl, base64Data, mimeType);
+    }
+
     const cleanText = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
     const parsed = JSON.parse(cleanText);
 
-    if (session.user.role !== "SUPER_ADMIN") {
-      await prisma.tenant.update({ where: { id: session.user.tenantId! }, data: { aiScansUsed: { increment: 1 } } });
+    // Incrementar contador de scans
+    if (session.user.role !== "SUPER_ADMIN" && session.user.tenantId) {
+      await prisma.tenant.update({ where: { id: session.user.tenantId }, data: { aiScansUsed: { increment: 1 } } });
     }
 
-    return NextResponse.json({ items: parsed.items || [] });
+    return NextResponse.json({ items: parsed.items || [], model: aiModel.name });
   } catch (e: any) {
     console.error("Invoice scan error:", e);
-    return NextResponse.json({ error: "Error al escanear la factura: " + (e.message || "desconocido") }, { status: 500 });
+    return NextResponse.json({ error: "Error al escanear: " + (e.message || "desconocido") }, { status: 500 });
   }
 }

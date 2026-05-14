@@ -2,11 +2,11 @@ import { PrismaClient } from "@prisma/client";
 import { encrypt, decrypt } from "./crypto";
 
 const encryptableFields: Record<string, string[]> = {
-  aIModel: ["apiKey"],
-  user: ["name"],
-  provider: ["telefono", "correo"],
-  client: ["telefono", "correo"],
-  operator: ["telefonoBodega"],
+  AIModel: ["apiKey"],
+  User: ["name"],
+  Provider: ["telefono", "correo"],
+  Client: ["telefono", "correo"],
+  Operator: ["telefonoBodega"],
 };
 
 function isEncrypted(val: string): boolean {

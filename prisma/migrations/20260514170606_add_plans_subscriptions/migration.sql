@@ -5,11 +5,47 @@ CREATE TABLE "Tenant" (
     "slug" TEXT NOT NULL,
     "logo" TEXT,
     "active" BOOLEAN NOT NULL DEFAULT true,
-    "plan" TEXT NOT NULL DEFAULT 'free',
+    "planId" TEXT,
+    "maxUsers" INTEGER NOT NULL DEFAULT 5,
+    "aiScansLimit" INTEGER NOT NULL DEFAULT 10,
+    "aiScansUsed" INTEGER NOT NULL DEFAULT 0,
+    "aiScansReset" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "expirationDate" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Tenant_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Plan" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "maxUsers" INTEGER NOT NULL DEFAULT 5,
+    "aiScansLimit" INTEGER NOT NULL DEFAULT 10,
+    "price" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "durationDays" INTEGER NOT NULL DEFAULT 30,
+    "active" BOOLEAN NOT NULL DEFAULT true,
+    "mercadoPagoPlanId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Plan_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Subscription" (
+    "id" TEXT NOT NULL,
+    "tenantId" TEXT NOT NULL,
+    "planId" TEXT NOT NULL,
+    "startDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "endDate" TIMESTAMP(3) NOT NULL,
+    "amount" DOUBLE PRECISION NOT NULL,
+    "active" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Subscription_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -282,6 +318,18 @@ CREATE TABLE "Purchase" (
 CREATE UNIQUE INDEX "Tenant_slug_key" ON "Tenant"("slug");
 
 -- CreateIndex
+CREATE INDEX "Tenant_planId_idx" ON "Tenant"("planId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Plan_name_key" ON "Plan"("name");
+
+-- CreateIndex
+CREATE INDEX "Subscription_tenantId_idx" ON "Subscription"("tenantId");
+
+-- CreateIndex
+CREATE INDEX "Subscription_planId_idx" ON "Subscription"("planId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
@@ -394,6 +442,15 @@ CREATE INDEX "Purchase_clientId_idx" ON "Purchase"("clientId");
 
 -- CreateIndex
 CREATE INDEX "Purchase_fechaCompra_idx" ON "Purchase"("fechaCompra");
+
+-- AddForeignKey
+ALTER TABLE "Tenant" ADD CONSTRAINT "Tenant_planId_fkey" FOREIGN KEY ("planId") REFERENCES "Plan"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_planId_fkey" FOREIGN KEY ("planId") REFERENCES "Plan"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "User" ADD CONSTRAINT "User_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "Role"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

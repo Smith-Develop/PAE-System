@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { InstallPrompt } from "@/components/layout/install-prompt";
+import { ExpirationWarning } from "@/components/layout/expiration-warning";
 import { ensureDb } from "@/lib/db-init";
 import { Badge } from "@/components/ui/badge";
 
@@ -35,6 +36,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <div className="animate-slide-up">{children}</div>
         </main>
         <InstallPrompt />
+        <ExpirationWarning />
       </SidebarInset>
     </SidebarProvider>
   );

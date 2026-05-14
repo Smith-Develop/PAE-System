@@ -101,9 +101,42 @@ export interface Tenant {
   slug: string;
   logo?: string | null;
   active: boolean;
-  plan: string;
+  planId?: string | null;
+  plan?: Plan | null;
+  maxUsers: number;
+  aiScansLimit: number;
+  aiScansUsed: number;
+  expirationDate?: Date | string | null;
   createdAt?: Date;
   updatedAt?: Date;
+  _count?: { users: number };
+}
+
+export interface Plan {
+  id: string;
+  name: string;
+  description?: string | null;
+  maxUsers: number;
+  aiScansLimit: number;
+  price: number;
+  durationDays: number;
+  active: boolean;
+  mercadoPagoPlanId?: string | null;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface Subscription {
+  id: string;
+  tenantId: string;
+  tenant?: Tenant;
+  planId: string;
+  plan?: Plan;
+  startDate: Date | string;
+  endDate: Date | string;
+  amount: number;
+  active: boolean;
+  createdAt?: Date;
 }
 
 export interface Operator {

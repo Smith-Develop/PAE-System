@@ -2,11 +2,25 @@ import { prisma } from "@/lib/prisma";
 
 let initialized = false;
 
+const PLAN_DEFAULTS = [
+  { name: "Gratuito", maxUsers: 5, aiScansLimit: 10, price: 0 },
+  { name: "Básico", maxUsers: 10, aiScansLimit: 30, price: 200000 },
+  { name: "Profesional", maxUsers: 25, aiScansLimit: 100, price: 500000 },
+  { name: "Enterprise", maxUsers: 100, aiScansLimit: 500, price: 1500000 },
+];
+
 export async function ensureDb() {
   if (initialized) return;
   initialized = true;
 
   try {
+    // Planes default
+    let freePlan: any;
+    for (const p of PLAN_DEFAULTS) {
+      const plan = await prisma.plan.upsert({ where: { name: p.name }, update: {}, create: p });
+      if (p.name === "Gratuito") freePlan = plan;
+    }
+
     const [superRole, adminRole, empRole] = await Promise.all([
       prisma.role.upsert({ where: { name: "SUPER_ADMIN" }, update: {}, create: { name: "SUPER_ADMIN", description: "Super Admin", permissions: "{}" } }),
       prisma.role.upsert({ where: { name: "ADMIN" }, update: {}, create: { name: "ADMIN", description: "Admin", permissions: "{}" } }),
@@ -16,7 +30,7 @@ export async function ensureDb() {
     const tenant = await prisma.tenant.upsert({
       where: { slug: "pae-antioquia" },
       update: {},
-      create: { name: "PAE Antioquia", slug: "pae-antioquia", active: true, plan: "free" },
+      create: { name: "PAE Antioquia", slug: "pae-antioquia", active: true, planId: freePlan?.id, maxUsers: freePlan?.maxUsers || 5, aiScansLimit: freePlan?.aiScansLimit || 10 },
     });
 
     // Super Admin
@@ -40,12 +54,9 @@ export async function ensureDb() {
       await prisma.user.create({ data: { email: "empleado@pae.gov.co", name: "Empleado PAE", password: await hash("empleado123", 12), roleId: empRole.id, active: true, tenantId: tenant.id } });
     }
 
-    // Componentes
     const names = ["Proteína", "Cereal", "Fruta", "Bebida", "Complemento", "Sopas", "Ensalada", "Postre"];
     for (const name of names) {
-      try {
-        await prisma.component.create({ data: { name, tenantId: tenant.id } });
-      } catch { /* ya existe */ }
+      try { await prisma.component.create({ data: { name, tenantId: tenant.id } }); } catch {}
     }
   } catch (e: any) {
     console.log("Seed omitido:", e.message?.substring(0, 80));
